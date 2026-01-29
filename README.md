@@ -7,7 +7,7 @@ PACU is a workflow for whole genome sequencing based phylogeny of Illumina and O
 PACU stands for the Prokaryotic Awesome variant Calling Utility and is named after an omnivorous fish (that eats both 
 Illumina and ONT reads).
 
-### PACU is also available on our public [Galaxy instance](https://galaxy.sciensano.be/) (registration required).
+#### PACU is also available on our public [Galaxy instance](https://galaxy.sciensano.be/) (registration required), or on [UseGalaxy.eu](https://usegalaxy.eu/root?tool_id=toolshed.g2.bx.psu.edu/repos/iuc/pacu_snp/pacu_snp/0.0.5+galaxy0) (no registration required).
 
 ----
 
