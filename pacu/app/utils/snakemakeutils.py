@@ -1,6 +1,6 @@
 import re
 from pathlib import Path
-from typing import Dict, Any, List, Union
+from typing import Any
 
 import yaml
 
@@ -8,7 +8,7 @@ from pacu.app.command import Command
 from pacu.app.utils.loggingutils import logger
 
 
-def generate_config_file(config_data: Dict[str, Any], output_dir: Path, output_basename: str = 'config.yml') -> str:
+def generate_config_file(config_data: dict[str, Any], output_dir: Path, output_basename: str = 'config.yml') -> str:
     """
     Generates a configuration file for Snakemake in YAML file format.
     :param config_data: Configuration data
@@ -25,7 +25,7 @@ def generate_config_file(config_data: Dict[str, Any], output_dir: Path, output_b
     return str(config_path)
 
 
-def run_snakemake(snakefile: Path, config_path: Path, targets: List[Path], dir_: Path, threads: int = 8) -> Command:
+def run_snakemake(snakefile: Path, config_path: Path, targets: list[Path], dir_: Path, threads: int = 8) -> Command:
     """
     Helper function to run snakemake workflows.
     :param snakefile: Workflow snakefile
@@ -54,7 +54,7 @@ def run_snakemake(snakefile: Path, config_path: Path, targets: List[Path], dir_:
     return command
 
 
-def __get_failed_rule(stderr: str) -> Union[str, None]:
+def __get_failed_rule(stderr: str) -> str | None:
     """
     Returns the name of the rule that failed during Snakemake execution.
     :return: Name of the failed rule

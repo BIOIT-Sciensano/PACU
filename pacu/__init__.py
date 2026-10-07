@@ -1,24 +1,25 @@
 import argparse
 import shutil
+from collections.abc import Sequence
 from importlib.resources import files
 from pathlib import Path
-from typing import Optional, Sequence
 
 from Bio import SeqIO
 
 from pacu.app.command import Command
 from pacu.app.utils import snakemakeutils
 from pacu.app.utils.loggingutils import logger
+
 from .app.utils.cliutils import path_to_absolute
 from .version import __version__
 
 
-class PACU(object):
+class PACU:
     """
     Main class to run the PACU pipeline.
     """
 
-    def __init__(self, args: Optional[Sequence[str]] = None) -> None:
+    def __init__(self, args: Sequence[str] | None = None) -> None:
         """
         Initializes the main class.
         :param args: Arguments (optional)
@@ -55,7 +56,7 @@ class PACU(object):
             shutil.copyfile(self._args.dir_working / 'pacu.log', self._args.output / 'pacu.log')
 
     @staticmethod
-    def _parse_arguments(args: Optional[Sequence[str]]) -> argparse.Namespace:
+    def _parse_arguments(args: Sequence[str] | None) -> argparse.Namespace:
         """
         Parses the command line arguments.
         :param args: Arguments

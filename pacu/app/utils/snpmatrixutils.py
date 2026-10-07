@@ -1,13 +1,13 @@
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Dict, Optional
 
 import pandas as pd
 import vcf
 from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
+
 # noinspection PyProtectedMember
 from vcf.model import _Record as VCFRecord
 
@@ -16,12 +16,15 @@ from pacu.app.utils.loggingutils import logger
 
 @dataclass(unsafe_hash=True, frozen=True, order=True)
 class SNPPosition:
+    """
+    Represents a position in an SNP matrix.
+    """
     contig: str
     position: int
-    reference_base: chr
+    reference_base: str
 
 
-def parse_vcf_file(path_vcf: Path, include_filtered: bool) -> List[VCFRecord]:
+def parse_vcf_file(path_vcf: Path, include_filtered: bool) -> list[VCFRecord]:
     """
     Parses a single VCF file.
     :param path_vcf: VCF path
@@ -42,8 +45,8 @@ def parse_vcf_file(path_vcf: Path, include_filtered: bool) -> List[VCFRecord]:
     return vcf_records
 
 
-def __get_nucleotides_per_position(paths_vcf: List[Path], names: List[str], include_filtered: bool = False) -> \
-        Dict[SNPPosition, Dict[str, str]]:
+def __get_nucleotides_per_position(paths_vcf: list[Path], names: list[str], include_filtered: bool = False) -> \
+        dict[SNPPosition, dict[str, str]]:
     """
     Returns a dictionary with the nucleotide for each sample at each variant position.
     :param paths_vcf: List of input VCF files
@@ -67,7 +70,7 @@ def __get_nucleotides_per_position(paths_vcf: List[Path], names: List[str], incl
     return nucl_by_position
 
 
-def create_snp_matrix(paths_vcf: List[Path], names: List[str], path_out: Path, path_tsv: Optional[Path] = None,
+def create_snp_matrix(paths_vcf: list[Path], names: list[str], path_out: Path, path_tsv: Path | None = None,
                       include_ref: bool = False) -> None:
     """
     Creates an SNP matrix from the input VCF file.
@@ -91,7 +94,7 @@ def create_snp_matrix(paths_vcf: List[Path], names: List[str], path_out: Path, p
     if include_ref is True:
         seq_by_sample_name['reference'] = []
     for snp_pos, nucl_by_sample in sorted(nucl_by_pos.items(), key=lambda x: x[0].position):
-        for name in seq_by_sample_name.keys():
+        for name in seq_by_sample_name:
             seq_by_sample_name[name].append(nucl_by_sample.get(name, snp_pos.reference_base))
 
     # Write output file

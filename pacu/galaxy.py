@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 import argparse
 from pathlib import Path
-from typing import Tuple, List
 
 from pacu import PACU, logger
-from pacu.app.utils import workflowutils, bamutils
+from pacu.app.utils import bamutils, workflowutils
 from pacu.app.utils.loggingutils import initialize_logging
 
 
-def parse_galaxy_args() -> Tuple[argparse.Namespace, List[str]]:
+def parse_galaxy_args() -> tuple[argparse.Namespace, list[str]]:
     """
     Parses the Galaxy arguments.
     :return: Parsed arguments

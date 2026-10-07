@@ -3,6 +3,8 @@ import unittest
 from importlib.resources import files
 from pathlib import Path
 
+from Bio import SeqIO
+
 from pacu import PACU
 
 
@@ -60,6 +62,28 @@ class TestWorkflow(unittest.TestCase):
                 '--threads', '8'
             ])
             workflow.run()
+
+    def test_snp_workflow_include_ref(self) -> None:
+        """
+        Tests the SNP workflow with the reference genome included in the phylogeny.
+        """
+        with tempfile.TemporaryDirectory(prefix='pacu') as dir_:
+            dir_out = Path(dir_, 'output')
+            workflow = PACU([
+                '--ref-fasta', str(files('pacu').joinpath('resources/testdata/NC_002695.2-subset.fasta')),
+                '--ilmn-in', str(files('pacu').joinpath('resources/testdata/bam/ilmn')),
+                '--ont-in', str(files('pacu').joinpath('resources/testdata/bam/ont')),
+                '--include-ref',
+                '--skip-gubbins',
+                '--dir-working', str(dir_),
+                '--output', str(dir_out),
+                '--threads', '8'
+            ])
+            workflow.run()
+
+            # Verify that the reference is included in the SNP matrix
+            with Path(dir_, 'tree', 'snp_matrix.fasta').open() as handle:
+                self.assertIn('reference', [seq.id for seq in SeqIO.parse(handle, 'fasta')])
 
 
 if __name__ == '__main__':

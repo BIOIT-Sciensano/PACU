@@ -1,6 +1,5 @@
 import os
 from pathlib import Path
-from typing import Dict
 
 from pacu import logger
 
@@ -10,24 +9,25 @@ def trimmomatic_dir_adapters() -> Path:
     Retrieves the directory containing the trimmomatic adapters.
     :return: Directory containing trimmomatic adapters
     """
-    # CONDA installation
+    # Explicitly set adapter directory
+    if os.environ.get('TRIMMOMATIC_ADAPTER_DIR') is not None:
+        return Path(os.environ['TRIMMOMATIC_ADAPTER_DIR'])
+
+    # CONDA (or Pixi) installation
     if os.environ.get('CONDA_PREFIX') is not None:
         return Path(os.environ['CONDA_PREFIX'], 'share', 'trimmomatic', 'adapters')
-    try:
-        return Path(os.environ['$TRIMMOMATIC_ADAPTER_DIR'])
-    except KeyError:
-        logger.error('TRIMMOMATIC_ADAPTER_DIR environment variable not set')
-        raise RuntimeError('TRIMMOMATIC_ADAPTER_DIR environment variable not set')
+    logger.error('TRIMMOMATIC_ADAPTER_DIR environment variable not set')
+    raise RuntimeError('TRIMMOMATIC_ADAPTER_DIR environment variable not set')
 
 
-def trimmomatic_collect_output(dir_out: Path) -> Dict[str, Path]:
+def trimmomatic_collect_output(dir_out: Path) -> dict[str, Path]:
     """
     Collects the trimmomatic output.
     :param dir_out: Output directory
     :return: Output dictionary
     """
     try:
-        fq_dict = {
+        fq_dict: dict[str, Path | None] = {
             '1P': next(dir_out.glob('*_1P.fastq.gz')),
             '2P': next(dir_out.glob('*_2P.fastq.gz'))
         }

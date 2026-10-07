@@ -1,6 +1,6 @@
 import datetime
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 import pandas as pd
 from matplotlib import pyplot
@@ -20,11 +20,20 @@ def create_upsetplot_overlap(data_overlap: pd.DataFrame, png_out: Path) -> None:
     :param png_out: Output PNG file
     :return: None
     """
+    # UpSet plots cannot be created without data
+    if len(data_overlap) == 0:
+        fig, ax = pyplot.subplots()
+        ax.text(0.5, 0.5, 'No positions removed by region filtering', ha='center', va='center')
+        ax.axis('off')
+        fig.savefig(png_out, dpi=300)
+        pyplot.close(fig)
+        return
+
     plot(data_overlap.groupby(by=['phages', 'gubbins', 'depth']).size(), show_counts=True)
     pyplot.savefig(png_out, dpi=300)
 
 
-def create_analysis_info_section(config_: Dict[str, Any]) -> HtmlReportSection:
+def create_analysis_info_section(config_: dict[str, Any]) -> HtmlReportSection:
     """
     Creates the analysis info section.
     :param config_: Configuration data
@@ -48,7 +57,7 @@ def create_analysis_info_section(config_: Dict[str, Any]) -> HtmlReportSection:
     return section
 
 
-def create_parameter_section(config_: Dict[str, Any]) -> HtmlReportSection:
+def create_parameter_section(config_: dict[str, Any]) -> HtmlReportSection:
     """
     Creates the parameter section.
     :param config_: Configuration data
