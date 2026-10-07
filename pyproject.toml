@@ -1,9 +1,5 @@
 [build-system]
-requires = [
-    "setuptools>=68",
-    "wheel",
-    "biopython"
-]
+requires = ["setuptools>=77", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -11,46 +7,54 @@ name = "pacu_snp"
 dynamic = ["version"]
 description = "Workflow for whole genome sequencing based phylogeny of Illumina and ONT data."
 readme = "README.md"
-requires-python = ">=3"
-license = {text = "GPL-3.0-or-later"}
+requires-python = ">=3.10"
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE"]
+
 authors = [
     {name = "Bert Bogaerts", email = "bioit@sciensano.be"}
 ]
+
 keywords = ["nanopore", "illumina", "sequencing", "phylogeny"]
 
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
-    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     "Programming Language :: Python :: 3",
 ]
 
+# The external tools (bcftools, samtools, Gubbins, IQ-TREE, ...) are not available on PyPI, see the README.
 dependencies = [
-    "PuLP==2.7.0",
-    "PyYAML",
-    "UpSetPlot>=0.8.0",
     "beautifulsoup4",
     "biopython",
-    "matplotlib>=3.7.1",
-    "numpy>=1.26.4",
-    "pandas>=2.1.0",
-    "pytest",
-    "pyvcf3>=1.0.3",
-    "snakemake==7.18.2",
-    "yattag"
+    "matplotlib",
+    "numpy",
+    "pandas>=2.1",
+    "pyvcf3",
+    "pyyaml",
+    "snakemake>=7.32.4,<8",
+    "upsetplot>=0.8",
+    "yattag",
+    # Snakemake 7 is not compatible with PuLP>=2.8 and requires pkg_resources (removed in setuptools 82)
+    "pulp<2.8",
+    "setuptools<82",
 ]
 
+[project.optional-dependencies]
+test = ["pytest"]
+
 [project.urls]
-"Homepage" = "https://github.com/BIOIT-Sciensano/PACU"
+Homepage = "https://github.com/BIOIT-Sciensano/PACU"
+Issues = "https://github.com/BIOIT-Sciensano/PACU/issues"
 
 [project.scripts]
 PACU = "pacu.run_pacu:main"
 PACU_map = "pacu.map_to_ref:main"
 PACU_galaxy = "pacu.galaxy:main"
 
-[tool.setuptools]
-packages = {find = {}}
+[tool.setuptools.packages.find]
+include = ["pacu*"]
 
 [tool.setuptools.dynamic]
 version = {attr = "pacu.version.__version__"}
@@ -73,3 +77,22 @@ pacu = [
     "resources/testdata/phylogeny.nwk",
     "resources/testdata/snp_matrix.fasta"
 ]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["D", "I", "F", "PL", "UP", "W"]
+ignore = [
+    "D100", "D104", "D200", "D204", "D205", "D400", "D401", "PLW1510", "PLW2901"
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "pep257"
+
+[tool.ruff.lint.pylint]
+max-args = 10
+
+[tool.ruff.format]
+quote-style = "preserve"
