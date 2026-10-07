@@ -20,6 +20,15 @@ def create_upsetplot_overlap(data_overlap: pd.DataFrame, png_out: Path) -> None:
     :param png_out: Output PNG file
     :return: None
     """
+    # UpSet plots cannot be created without data
+    if len(data_overlap) == 0:
+        fig, ax = pyplot.subplots()
+        ax.text(0.5, 0.5, 'No positions removed by region filtering', ha='center', va='center')
+        ax.axis('off')
+        fig.savefig(png_out, dpi=300)
+        pyplot.close(fig)
+        return
+
     plot(data_overlap.groupby(by=['phages', 'gubbins', 'depth']).size(), show_counts=True)
     pyplot.savefig(png_out, dpi=300)
 
