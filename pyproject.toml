@@ -42,7 +42,7 @@ dependencies = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/BioinformaticsPlatformWIV-ISP/PACU/"
+"Homepage" = "https://github.com/BIOIT-Sciensano/PACU"
 
 [project.scripts]
 PACU = "pacu.run_pacu:main"
