@@ -1,6 +1,5 @@
 from importlib.resources import files
 from pathlib import Path
-from typing import Optional, Dict
 
 from pacu.app.command import Command
 from pacu.app.utils.loggingutils import logger
@@ -41,7 +40,7 @@ RATES_AMONG_SITES = {
 
 
 def __create_config_file_model_selection(
-        dir_: Path, branch_swap_filter: str, missing_data_treatment: str, site_cov_cutoff: Optional[int],
+        dir_: Path, branch_swap_filter: str, missing_data_treatment: str, site_cov_cutoff: int | None,
         threads: int = 4) -> Path:
     """
     Generates the config file for the model selection.
@@ -70,7 +69,7 @@ def __create_config_file_model_selection(
 
 
 def run_model_selection(path_fasta: Path, path_out: Path, dir_: Path, branch_swap_filter: str,
-                        missing_data_treatment: str, site_cov_cutoff: Optional[int], threads: int = 4) -> None:
+                        missing_data_treatment: str, site_cov_cutoff: int | None, threads: int = 4) -> None:
     """
     Runs model selection on the given SNP matrix.
     :param path_fasta: Input SNP matrix FASTA file
@@ -95,7 +94,7 @@ def run_model_selection(path_fasta: Path, path_out: Path, dir_: Path, branch_swa
         raise RuntimeError(f'Error running model selection: {command.stderr}')
 
 
-def parse_model_selection_csv(path_csv: Path) -> Dict:
+def parse_model_selection_csv(path_csv: Path) -> dict:
     """
     Parses the model selection output CSV file.
     :return: Information for the best selected model
@@ -117,7 +116,7 @@ def parse_model_selection_csv(path_csv: Path) -> Dict:
 
 
 def __create_config_file_tree_construction(
-        dir_: Path, model: str, branch_swap_filter: str, missing_data_treatment: str, site_cov_cutoff: Optional[int],
+        dir_: Path, model: str, branch_swap_filter: str, missing_data_treatment: str, site_cov_cutoff: int | None,
         bootstrap_replicates: int, heuristic_method: str, initial_tree: str, rates_among_sites: str,
         gamma_categories: int = 5, threads: int = 4) -> Path:
     """
@@ -159,7 +158,7 @@ def __create_config_file_tree_construction(
 
 
 def run_tree_building(path_fasta: Path, path_csv: Path, path_out: Path, dir_: Path, branch_swap_filter: str,
-                      missing_data_treatment: str, site_cov_cutoff: Optional[int], bootstrap_replicates: int,
+                      missing_data_treatment: str, site_cov_cutoff: int | None, bootstrap_replicates: int,
                       heuristic_method: str, initial_tree: str, gamma_categories: int = 5,
                       threads: int = 4) -> None:
     """

@@ -1,6 +1,5 @@
 import re
 from pathlib import Path
-from typing import Union
 
 from pacu import Command, logger
 
@@ -25,7 +24,7 @@ def run_ml_tree_construction(path_fasta: Path, path_out: Path, threads: int = 4)
     return command
 
 
-def extract_selected_model(stdout: str) -> Union[str, None]:
+def extract_selected_model(stdout: str) -> str | None:
     """
     Extracts the information on the selected model for tree construction.
     :param stdout: Stdout
@@ -37,4 +36,4 @@ def extract_selected_model(stdout: str) -> Union[str, None]:
             continue
         return m.group(1)
     logger.warning('Cannot extract selected model from IQ-TREE output')
-
+    return None

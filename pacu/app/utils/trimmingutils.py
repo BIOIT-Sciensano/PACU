@@ -1,6 +1,5 @@
 import os
 from pathlib import Path
-from typing import Dict
 
 from pacu import logger
 
@@ -21,7 +20,7 @@ def trimmomatic_dir_adapters() -> Path:
     raise RuntimeError('TRIMMOMATIC_ADAPTER_DIR environment variable not set')
 
 
-def trimmomatic_collect_output(dir_out: Path) -> Dict[str, Path]:
+def trimmomatic_collect_output(dir_out: Path) -> dict[str, Path]:
     """
     Collects the trimmomatic output.
     :param dir_out: Output directory

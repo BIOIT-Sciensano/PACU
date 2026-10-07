@@ -39,9 +39,7 @@ def is_new_region(record: pd.Series) -> bool:
     """
     if numpy.isnan(record['shift_pos']):
         return False
-    elif record['chr'] != record['shift_chr']:
-        return True
-    elif int(record['pos']) - 1 != int(record['shift_pos']):
+    elif record['chr'] != record['shift_chr'] or int(record['pos']) - 1 != int(record['shift_pos']):
         return True
     return False
 
@@ -69,7 +67,7 @@ def calculate_overlaps(contig_sizes: dict[str, int], bed_phages: Path, bed_gubbi
             masks[key][contig][start:end] = True
 
     data_by_contig = []
-    for contig in contig_sizes.keys():
+    for contig in contig_sizes:
         idx_covered = numpy.flatnonzero(numpy.logical_or.reduce([masks[key][contig] for key in bed_dict]))
         data_by_contig.append(pd.DataFrame({
             'chr': contig,
@@ -230,8 +228,7 @@ def plot_newick_phylogeny(path_nwk: Path, path_out: Path, width: int = 600, heig
         path_template = Path(str(files('pacu').joinpath('resources/figtree_template.txt')))
         with open(file_.name, 'a') as handle_out, open(path_template) as handle_in:
             handle_out.write('\n')
-            for line in handle_in.readlines():
-                handle_out.write(line)
+            handle_out.writelines(handle_in.readlines())
 
         # Create the visualization
         command = Command(' '.join([
@@ -261,8 +258,7 @@ def sanitize_input_name(name: str, extension: str) -> str:
     name = ''.join(c for c in name.replace(' ', '_') if c not in invalid_chars)
 
     # Avoid double dot before the extension
-    if name.endswith('.'):
-        name = name[:-1]
+    name = name.removesuffix('.')
 
     # Add extension
     if not name.endswith(f'.{extension}'):
