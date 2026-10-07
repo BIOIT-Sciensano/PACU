@@ -411,13 +411,13 @@ rule region_filtering_plot:
         from Bio import SeqIO
         from pacu.app.utils import reportutils
 
-        # Get the size of the reference genome
+        # Get the size of each contig in the reference genome
         with open(input.FASTA) as handle:
-            ref_size = sum([len(s) for s in SeqIO.parse(handle, 'fasta')])
+            contig_sizes = {s.id: len(s) for s in SeqIO.parse(handle, 'fasta')}
 
         # Calculate data
         data_overlaps = workflowutils.calculate_overlaps(
-            ref_size, Path(input.BED_phages), Path(input.BED_gubbins), Path(input.BED_depth))
+            contig_sizes, Path(input.BED_phages), Path(input.BED_gubbins), Path(input.BED_depth))
         data_overlaps.to_csv(output.TSV, sep='\t', index=False)
 
         # Create the plot
@@ -608,7 +608,7 @@ rule create_snp_matrix:
         FASTA = 'tree/snp_matrix.fasta',
         TSV = 'combined/snp_positions.tsv'
     params:
-        include_ref = False,
+        include_ref = config.get('include_ref', False),
         names = list(config['input'].keys())
     run:
         from pacu.app.utils import snpmatrixutils
