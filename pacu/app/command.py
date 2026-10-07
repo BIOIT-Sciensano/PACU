@@ -4,7 +4,7 @@ from pathlib import Path
 from pacu.app.utils.loggingutils import logger
 
 
-class Command(object):
+class Command:
     """
     Object to handle command line calls.
     """

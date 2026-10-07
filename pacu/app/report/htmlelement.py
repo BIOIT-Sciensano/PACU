@@ -17,7 +17,7 @@ class HtmlElement(HtmlBase):
         :param attributes: HTML attributes
         :param text: Text
         """
-        super(HtmlElement, self).__init__()
+        super().__init__()
         self._tag_name = tag
         self._attributes = attributes
         self._tag_text = text

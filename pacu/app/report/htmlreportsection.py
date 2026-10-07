@@ -1,7 +1,8 @@
 import logging
 import shutil
+from collections.abc import Sequence
 from pathlib import Path
-from typing import List, Union, Tuple, Optional, Sequence
+from typing import Union
 
 from pacu.app.report.htmlbase import HtmlBase
 from pacu.app.report.htmlelement import HtmlElement
@@ -13,14 +14,14 @@ class HtmlReportSection(HtmlElement):
     This class can be used to create a section in the HTML report.
     """
 
-    def __init__(self, title: Optional[str], level: int = 2, subtitle: Optional[str] = None) -> None:
+    def __init__(self, title: str | None, level: int = 2, subtitle: str | None = None) -> None:
         """
         Initializes a report section.
         :param title: Section title
         :param level: Header level
         :param subtitle: Subtitle to put next to the header
         """
-        super(HtmlReportSection, self).__init__('div', attributes=[('class', 'report_section')])
+        super().__init__('div', attributes=[('class', 'report_section')])
         self._title = title
         if (title is not None) and (subtitle is not None):
             self.add_header_with_subtitle(title, level, subtitle)
@@ -36,13 +37,13 @@ class HtmlReportSection(HtmlElement):
         :param subtitle: Subtitle
         :return: None
         """
-        with self.get_tag('h{}'.format(str(level))):
+        with self.get_tag(f'h{level!s}'):
             self.add_text(header + ' ')
             with self.get_tag('small', [('class', 'header-subtitle')]):
-                self.add_text('({})'.format(subtitle))
+                self.add_text(f'({subtitle})')
 
     @property
-    def files(self) -> List[Path]:
+    def files(self) -> list[Path]:
         """
         Returns the files that were added to this report.
         :return: Files
@@ -75,12 +76,12 @@ class HtmlReportSection(HtmlElement):
         :param relative_path: path where the file will be saved relative to the report output directory
         :return: Relative path
         """
-        logging.info("Adding file to report section: {}".format(relative_path))
+        logging.info(f"Adding file to report section: {relative_path}")
         self._files.append((input_file, relative_path,))
         return relative_path
 
-    def add_table(self, data: List[Sequence[Union[str, int, 'HtmlBase']]], column_names: List[str] = None,
-                  table_attributes: List[Tuple[str, str]] = None, msg_if_empty: str = 'None found') -> None:
+    def add_table(self, data: list[Sequence[Union[str, int, 'HtmlBase']]], column_names: list[str] = None,
+                  table_attributes: list[tuple[str, str]] = None, msg_if_empty: str = 'None found') -> None:
         """
         Adds a table to the report section.
         :param data: Table data

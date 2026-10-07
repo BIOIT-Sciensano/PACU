@@ -1,14 +1,15 @@
-from pathlib import Path
-from typing import Tuple, List, Union, Optional, Sequence
-
 import abc
+from collections.abc import Sequence
+from pathlib import Path
+from typing import Union
+
 import bs4
 import yattag
 from bs4 import BeautifulSoup
 from yattag import SimpleDoc
 
 
-class HtmlBase(object):
+class HtmlBase:
     """
     Base class for HTML objects, contains common methods for classes that implement HTML objects.
     """
@@ -21,7 +22,7 @@ class HtmlBase(object):
         """
         self._doc = yattag.SimpleDoc()
 
-    def get_tag(self, tag: str, attributes: List[Tuple[str, str]] = None) -> SimpleDoc.Tag:
+    def get_tag(self, tag: str, attributes: list[tuple[str, str]] = None) -> SimpleDoc.Tag:
         """
         Returns a tag with the given attributes.
         :param tag: Tag
@@ -33,7 +34,7 @@ class HtmlBase(object):
         else:
             return self._doc.tag(tag)
 
-    def add_header(self, text: str, level: int, attributes: List[Tuple[str, str]] = None) -> None:
+    def add_header(self, text: str, level: int, attributes: list[tuple[str, str]] = None) -> None:
         """
         Adds a header.
         :param text: Header text
@@ -41,10 +42,10 @@ class HtmlBase(object):
         :param attributes: Additional HTML arguments (key-value)
         :return: None
         """
-        with self.get_tag('h{}'.format(str(level)), attributes):
+        with self.get_tag(f'h{level!s}', attributes):
             self.add_text(text)
 
-    def add_paragraph(self, text: str, attributes: List[Tuple[str, str]] = None):
+    def add_paragraph(self, text: str, attributes: list[tuple[str, str]] = None):
         """
         Adds a text paragraph
         :param text: Paragraph text
@@ -68,8 +69,8 @@ class HtmlBase(object):
         """
         return self._doc.getvalue()
 
-    def add_table(self, data: List[Sequence[Union[str, int, 'HtmlBase']]], column_names: List[str] = None,
-                  table_attributes: List[Tuple[str, str]] = None) -> None:
+    def add_table(self, data: list[Sequence[Union[str, int, 'HtmlBase']]], column_names: list[str] = None,
+                  table_attributes: list[tuple[str, str]] = None) -> None:
         """
         Adds a table.
         :param data: Table data
@@ -84,7 +85,7 @@ class HtmlBase(object):
                 self._add_table_row(row)
         self.add_line_break()
 
-    def _add_table_header(self, column_names: List[str]) -> None:
+    def _add_table_header(self, column_names: list[str]) -> None:
         """
         Adds a header to a table.
         :param column_names: Names of the columns
@@ -95,7 +96,7 @@ class HtmlBase(object):
                 with self.get_tag('th'):
                     self.add_text(name)
 
-    def _add_table_row(self, data: Sequence[Union[str, int]], attributes: Optional[List[Tuple[str, str]]] = None) -> \
+    def _add_table_row(self, data: Sequence[str | int], attributes: list[tuple[str, str]] | None = None) -> \
             None:
         """
         Adds a row to a table.
@@ -156,8 +157,8 @@ class HtmlBase(object):
                 self._doc.text(f'{type_}: ')
             self.add_text(message)
 
-    def add_labeled_list(self, rows: List[Sequence[str]], ordered=False,
-                         attributes: List[Tuple[str, str]] = None) -> None:
+    def add_labeled_list(self, rows: list[Sequence[str]], ordered=False,
+                         attributes: list[tuple[str, str]] = None) -> None:
         """
         Adds a labeled list.
         :param rows: List of label-text pairs
@@ -170,7 +171,7 @@ class HtmlBase(object):
             for label, text in rows:
                 with self._doc.tag('li'):
                     with self._doc.tag('b'):
-                        self._doc.text('{}: '.format(label))
+                        self._doc.text(f'{label}: ')
                     self.add_text(text)
 
     def add_html_object(self, input_object: 'HtmlBase') -> None:
@@ -180,7 +181,7 @@ class HtmlBase(object):
         :return: None
         """
         if not isinstance(input_object, HtmlBase):
-            raise ValueError("{} is not an HTML object".format(input_object))
+            raise ValueError(f"{input_object} is not an HTML object")
         self._doc.asis(input_object.to_html())
 
     def add_raw(self, html_code: str) -> None:
@@ -217,9 +218,8 @@ class HtmlBase(object):
         attributes = [('class', 'sub_header')]
         if id_ is not None:
             attributes.append(('id', id_))
-        with self.get_tag('div', attributes):
-            with self.get_tag('h2'):
-                self.add_text(text)
+        with self.get_tag('div', attributes), self.get_tag('h2'):
+            self.add_text(text)
 
     def add_horizontal_line(self) -> None:
         """

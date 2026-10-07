@@ -1,6 +1,6 @@
 import json
 from importlib.resources import files
-from typing import Dict, Any
+from typing import Any
 
 from pacu.app.report.htmlbase import HtmlBase
 
@@ -12,7 +12,7 @@ class HtmlCitation(HtmlBase):
     :return: None
     """
 
-    def __init__(self, citation_data: Dict[str, Any]) -> None:
+    def __init__(self, citation_data: dict[str, Any]) -> None:
         """
         Initializes the citation.
         :param citation_data: Citation data
