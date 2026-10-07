@@ -16,6 +16,9 @@ from pacu.app.utils.loggingutils import logger
 
 @dataclass(unsafe_hash=True, frozen=True, order=True)
 class SNPPosition:
+    """
+    Represents a position in an SNP matrix.
+    """
     contig: str
     position: int
     reference_base: str
