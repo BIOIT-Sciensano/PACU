@@ -3,7 +3,6 @@ import re
 import tempfile
 from importlib.resources import files
 from pathlib import Path
-from typing import Union
 
 import numpy
 import pandas as pd
@@ -12,6 +11,24 @@ from Bio import Phylo
 
 from pacu.app.command import Command
 from pacu.app.utils.loggingutils import logger
+
+BED_HEADER_PREFIXES = ('#', 'track', 'browser')
+
+
+def parse_bed(path_bed: Path | str) -> pd.DataFrame:
+    """
+    Parses the first three columns of a BED file. Empty lines and header lines are skipped.
+    :param path_bed: Input BED file
+    :return: Data frame with the 'chr', 'start' and 'end' columns
+    """
+    records = []
+    with open(path_bed) as handle:
+        for line in handle:
+            if (line.strip() == '') or line.startswith(BED_HEADER_PREFIXES):
+                continue
+            parts = line.split()
+            records.append({'chr': parts[0], 'start': int(parts[1]), 'end': int(parts[2])})
+    return pd.DataFrame(records, columns=['chr', 'start', 'end'])
 
 
 def is_new_region(record: pd.Series) -> bool:
@@ -22,34 +39,44 @@ def is_new_region(record: pd.Series) -> bool:
     """
     if numpy.isnan(record['shift_pos']):
         return False
-    elif int(record['pos']) - 1 != int(record['shift_pos']):
+    elif record['chr'] != record['shift_chr']:
         return True
-    elif record['chr'] != record['chr']:
+    elif int(record['pos']) - 1 != int(record['shift_pos']):
         return True
     return False
 
 
-def calculate_overlaps(size: int, bed_phages: Path, bed_gubbins: Path, bed_depth: Path) -> pd.DataFrame:
+def calculate_overlaps(contig_sizes: dict[str, int], bed_phages: Path, bed_gubbins: Path,
+                       bed_depth: Path) -> pd.DataFrame:
     """
-    Calculates the size of the overlaps between the BED files.
+    Determines which reference positions are covered by each of the BED files used for region filtering.
+    :param contig_sizes: Length of each contig in the reference genome
     :param bed_phages: BED file with phage regions
     :param bed_gubbins: BED file with recombination detected by Gubbins
     :param bed_depth: BED file with low-depth positions
-    :param size: Reference genome size
+    :return: Data frame with one row per covered position (1-based) and a boolean column per BED file
     """
-    data_overlap = pd.DataFrame(data={'pos': range(size)})
-
     bed_dict = {'phages': bed_phages, 'gubbins': bed_gubbins, 'depth': bed_depth}
+    masks = {key: {contig: numpy.zeros(size, dtype=bool) for contig, size in contig_sizes.items()} for key in bed_dict}
     for key, path_bed in bed_dict.items():
-        data_overlap[key] = False
-        data_bed = pd.read_table(path_bed, names=['seq_id', 'start', 'end', 'name'])
+        data_bed = parse_bed(path_bed)
         logger.info(f'{len(data_bed)} regions parsed from {path_bed.name}')
-        for region in data_bed.itertuples():
-            # noinspection PyUnresolvedReferences
-            pos = (data_overlap['pos'][(data_overlap['pos'] > region.start) & (data_overlap['pos'] <= region.end)])
-            data_overlap.loc[pos, key] = True
+        for contig, start, end in zip(data_bed['chr'], data_bed['start'], data_bed['end']):
+            if contig not in contig_sizes:
+                logger.warning(f"Region on unknown contig '{contig}' in {path_bed.name} is ignored")
+                continue
+            # BED coordinates are 0-based and half-open
+            masks[key][contig][start:end] = True
 
-    data_overlap = data_overlap[data_overlap[bed_dict.keys()].any(axis=1)]
+    data_by_contig = []
+    for contig in contig_sizes.keys():
+        idx_covered = numpy.flatnonzero(numpy.logical_or.reduce([masks[key][contig] for key in bed_dict]))
+        data_by_contig.append(pd.DataFrame({
+            'chr': contig,
+            'pos': idx_covered + 1,
+            **{key: masks[key][contig][idx_covered] for key in bed_dict}
+        }))
+    data_overlap = pd.concat(data_by_contig, ignore_index=True)
     logger.info(f'{len(data_overlap):,} positions removed in total')
     return data_overlap
 
@@ -61,9 +88,8 @@ def count_covered_positions(bed_file: Path) -> int:
     :param bed_file: Input BED file
     :return: Number of covered positions
     """
-    data_in = pd.read_table(bed_file, usecols=[0, 1, 2], names=['chr', 'start', 'end'])
-    data_in['interval_size'] = data_in['end'] - data_in['start']
-    return sum(data_in['interval_size'])
+    data_in = parse_bed(bed_file)
+    return int((data_in['end'] - data_in['start']).sum())
 
 
 def count_overlap(bed_file_a: Path, bed_file_b: Path) -> int:
@@ -88,11 +114,10 @@ def count_regions(path_bed: Path) -> int:
     :param path_bed: Input BED file
     :return: Number of regions (i.e., lines)
     """
-    data_in = pd.read_table(path_bed, usecols[0, 1, 2], names=['chr', 'start', 'end'])
-    return len(data_in)
+    return len(parse_bed(path_bed))
 
 
-def calculate_distance(row: pd.Series) -> Union[int, None]:
+def calculate_distance(row: pd.Series) -> int | None:
     """
     Calculates the distance to the closest SNP.
     :param row: Table row
@@ -232,8 +257,8 @@ def sanitize_input_name(name: str, extension: str) -> str:
     """
     invalid_chars = '/!@#$\\'
 
-    # Replace spaces by dashes
-    name = name.replace(' ', '_')
+    # Replace spaces by underscores and remove invalid characters
+    name = ''.join(c for c in name.replace(' ', '_') if c not in invalid_chars)
 
     # Avoid double dot before the extension
     if name.endswith('.'):
@@ -242,9 +267,7 @@ def sanitize_input_name(name: str, extension: str) -> str:
     # Add extension
     if not name.endswith(f'.{extension}'):
         return f'{name}.{extension}'
-
-    # Return sample name without invalid characters
-    return ''.join(c for c in name if c not in invalid_chars)
+    return name
 
 
 PATTERNS_FQ_PE = [
