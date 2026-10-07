@@ -128,6 +128,42 @@ class TestMapToRef(unittest.TestCase):
             self.assertTrue(path_out.exists())
             self.assertGreater(path_out.stat().st_size, 0)
 
+    def test_map_to_ref_rerun_same_working_dir(self) -> None:
+        """
+        Tests the map to ref script when it is executed twice in the same working directory (incl. Galaxy names).
+        :return: None
+        """
+        dir_testdata = files('pacu').joinpath('resources/testdata')
+        args_by_read_type = {
+            'ont': [
+                '--fastq-ont', str(dir_testdata.joinpath('fastq/TIAC1151-ont.fastq.gz')),
+                '--fastq-ont-name', 'galaxy_ont.fastq.gz'
+            ],
+            'illumina': [
+                '--fastq-illumina',
+                str(dir_testdata.joinpath('fastq/TIAC1151_1P.fastq.gz')),
+                str(dir_testdata.joinpath('fastq/TIAC1151_2P.fastq.gz')),
+                '--fastq-illumina-names', 'galaxy_ilmn_1P.fastq.gz', 'galaxy_ilmn_2P.fastq.gz'
+            ]
+        }
+        with tempfile.TemporaryDirectory(prefix='pacu') as dir_:
+            for read_type, args_fastq in args_by_read_type.items():
+                path_out = Path(dir_, f'mapped_reads_{read_type}.bam')
+                for _ in range(2):
+                    map_to_ref = MapToRef([
+                        '--ref-fasta', str(dir_testdata.joinpath('NC_002695.2-subset.fasta')),
+                        '--read-type', read_type,
+                        *args_fastq,
+                        '--output', str(path_out),
+                        '--dir-working', dir_,
+                        '--threads', '4'
+                    ])
+                    map_to_ref.run()
+
+                # Verify the output file
+                self.assertTrue(path_out.exists())
+                self.assertGreater(path_out.stat().st_size, 0)
+
 
 if __name__ == '__main__':
     initialize_logging()
