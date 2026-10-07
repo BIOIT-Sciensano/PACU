@@ -1,24 +1,37 @@
-name: pacu_env
+# Generated from pixi.toml (do not edit manually), using:
+#   pixi workspace export conda-environment | sed 's/^name: default/name: pacu/'
+name: pacu
 channels:
-  - conda-forge
-  - bioconda
-  - defaults
+- conda-forge
+- bioconda
+- nodefaults
 dependencies:
-  - bcftools=1.17
-  - beautifulsoup4=4.12.2
-  - bedtools >=2.31.0
-  - bowtie2=2.5.1
-  - figtree=1.4.4
-  - gubbins=3.3.1
-  - iqtree=2.2.5
-  - matplotlib-base=3.8.0
-  - minimap2=2.26
-  - pandas=2.1.0
-  - pyvcf3=1.0.3
-  - samtools=1.17
-  - seqkit=2.3.1
-  - snakemake=7.32.4
-  - snp-dists=0.8.2
-  - trimmomatic=0.39
-  - upsetplot=0.8.0
-  - yattag=1.15.1
+- python 3.10.*
+- bcftools >=1.17
+- bedtools >=2.31
+- figtree >=1.4.4
+- gubbins >=3.3
+- iqtree >=2.2.5,<3
+- samtools >=1.17
+- snp-dists >=0.8.2
+- bowtie2 >=2.5.1
+- minimap2 >=2.26
+- seqkit >=2.3.1
+- trimmomatic >=0.39
+- beautifulsoup4 *
+- biopython *
+- matplotlib-base *
+- numpy *
+- pandas >=2.1
+- pulp <2.8
+- pyvcf3 *
+- pyyaml *
+- setuptools <82
+- snakemake-minimal >=7.32.4,<8
+- upsetplot >=0.8
+- yattag *
+- pip *
+- pytest *
+- pip
+- pip:
+  - -e .
