@@ -1,20 +1,32 @@
 #! /usr/bin/env python
 import argparse
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Sequence, Optional, Dict
 
 from pacu import Command, logger
-from pacu.app.utils import workflowutils, trimmingutils, bamutils, fastaidxutils
+from pacu.app.utils import bamutils, fastaidxutils, trimmingutils, workflowutils
 from pacu.app.utils.cliutils import path_to_absolute
 from pacu.app.utils.loggingutils import initialize_logging
 
 
-class MapToRef(object):
+def _create_symlink(path_link: Path, path_target: Path) -> None:
+    """
+    Creates a symlink, replacing an existing symlink (e.g., from a previous run in the same working directory).
+    :param path_link: Path to the symlink
+    :param path_target: Path to the target file
+    :return: None
+    """
+    if path_link.is_symlink():
+        path_link.unlink()
+    path_link.symlink_to(path_target)
+
+
+class MapToRef:
     """
     Main script to map reads to the reference genome.
     """
 
-    def __init__(self, args: Optional[Sequence[str]] = None) -> None:
+    def __init__(self, args: Sequence[str] | None = None) -> None:
         """
         Initializes the main script.
         :param args: Arguments (optional)
@@ -80,11 +92,11 @@ class MapToRef(object):
         """
         dir_.mkdir(exist_ok=True, parents=True)
         path_ref_link = dir_ / self.ref_name
-        path_ref_link.symlink_to(self._args.ref_fasta)
+        _create_symlink(path_ref_link, self._args.ref_fasta)
         logger.debug(f'Creating symlink for reference genome: {path_ref_link} -> {self._args.ref_fasta}')
         return path_ref_link
 
-    def _illumina_trim(self) -> Dict[str, Path]:
+    def _illumina_trim(self) -> dict[str, Path]:
         """
         Trims the Illumina reads.
         :return: None
@@ -128,7 +140,7 @@ class MapToRef(object):
         logger.info(f'Bowtie2 index created in: {dir_idx}')
         return path_ref_link
 
-    def _illumina_map(self, fq_dict: Dict[str, Path], path_ref: Path, path_out: Path) -> None:
+    def _illumina_map(self, fq_dict: dict[str, Path], path_ref: Path, path_out: Path) -> None:
         """
         Maps the Illumina reads to the reference genome.
         :param fq_dict: Input FASTQ dictionary
@@ -217,7 +229,7 @@ class MapToRef(object):
             raise RuntimeError(f'Error mapping reads: {command.stderr}')
 
     @staticmethod
-    def _parse_arguments(args: Optional[Sequence[str]]) -> argparse.Namespace:
+    def _parse_arguments(args: Sequence[str] | None) -> argparse.Namespace:
         """
         Parses the command line arguments.
         :param args: Arguments
@@ -280,14 +292,16 @@ class MapToRef(object):
                 path_link = Path(
                     self._args.dir_working, 'input', f'{self._name}_{idx+1}P.fastq' + ('.gz' if is_gzipped else ''))
                 logger.debug(f'Creating link: {path_link} -> {self._args.fastq_illumina[idx]}')
-                path_link.absolute().symlink_to(self._args.fastq_illumina[idx].absolute())
+                _create_symlink(path_link.absolute(), self._args.fastq_illumina[idx].absolute())
                 self._args.fastq_illumina[idx] = path_link
         elif self._args.fastq_ont_name is not None:
             Path(self._args.dir_working, 'input').mkdir(parents=True, exist_ok=True)
             is_gzipped = workflowutils.is_gzipped(self._args.fastq_ont)
             path_link = Path(
                 self._args.dir_working, 'input', f'{self._name}.fastq' + ('.gz' if is_gzipped else '')).absolute()
-            path_link.symlink_to(self._args.fastq_ont.absolute())
+            logger.debug(f'Creating link: {path_link} -> {self._args.fastq_ont}')
+            _create_symlink(path_link, self._args.fastq_ont.absolute())
+            self._args.fastq_ont = path_link
         else:
             logger.debug('Not renaming inputs')
 
