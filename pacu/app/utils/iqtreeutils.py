@@ -16,7 +16,7 @@ def run_ml_tree_construction(path_fasta: Path, path_out: Path, threads: int = 4)
         raise ValueError("Output path should end with the '.nwk' extension")
     basename = path_out.name.replace('.nwk', '')
     prefix = path_out.parent / basename
-    command = Command(f"iqtree2 -s {path_fasta} --boot 100 -m MFP --prefix {prefix} -T {threads}")
+    command = Command(f"iqtree3 -s {path_fasta} --boot 100 -m MFP --prefix {prefix} -T {threads}")
     command.run(path_out.parent)
     if not command.exit_code == 0:
         raise RuntimeError(f'Error running IQ-TREE: {command.stderr}')
