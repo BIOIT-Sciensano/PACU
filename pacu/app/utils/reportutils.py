@@ -4,7 +4,6 @@ from typing import Any
 
 import pandas as pd
 from matplotlib import pyplot
-from upsetplot import plot
 
 from pacu import version
 from pacu.app.report.htmlcitation import HtmlCitation
@@ -29,8 +28,52 @@ def create_upsetplot_overlap(data_overlap: pd.DataFrame, png_out: Path) -> None:
         pyplot.close(fig)
         return
 
-    plot(data_overlap.groupby(by=['phages', 'gubbins', 'depth']).size(), show_counts=True)
-    pyplot.savefig(png_out, dpi=300)
+    categories = ['phages', 'gubbins', 'depth']
+    intersections = data_overlap.groupby(by=categories).size().sort_values(ascending=False)
+    category_totals = data_overlap[categories].sum()
+    x = range(len(intersections))
+    y = range(len(categories))
+
+    fig = pyplot.figure(figsize=(8, 5))
+    grid = fig.add_gridspec(2, 2, width_ratios=[1, 3], height_ratios=[3, 1], wspace=0.25, hspace=0.05)
+    ax_intersections = fig.add_subplot(grid[0, 1])
+    ax_matrix = fig.add_subplot(grid[1, 1], sharex=ax_intersections)
+    ax_totals = fig.add_subplot(grid[1, 0], sharey=ax_matrix)
+
+    # Intersection sizes (top)
+    bars = ax_intersections.bar(x, intersections.to_numpy(), width=0.6, color='black')
+    ax_intersections.bar_label(bars, fmt='{:,.0f}', padding=2)
+    ax_intersections.set_ylim(0, intersections.max() * 1.15)
+    ax_intersections.set_ylabel('Intersection size')
+    ax_intersections.tick_params(axis='x', bottom=False, labelbottom=False)
+    ax_intersections.spines[['top', 'right', 'bottom']].set_visible(False)
+
+    # Matrix indicating the categories in each intersection (bottom)
+    for i, intersection in enumerate(intersections.index):
+        y_active = [j for j, is_active in enumerate(intersection) if is_active]
+        ax_matrix.scatter([i] * len(categories), y, s=80, color='lightgrey', zorder=1)
+        ax_matrix.scatter([i] * len(y_active), y_active, s=80, color='black', zorder=2)
+        if len(y_active) > 1:
+            ax_matrix.plot([i, i], [min(y_active), max(y_active)], linewidth=2, color='black', zorder=2)
+    ax_matrix.set_xlim(-0.5, len(intersections) - 0.5)
+    ax_matrix.set_ylim(-0.5, len(categories) - 0.5)
+    ax_matrix.set_yticks(y, labels=categories)
+    ax_matrix.tick_params(axis='both', length=0, labelbottom=False)
+    for spine in ax_matrix.spines.values():
+        spine.set_visible(False)
+
+    # Total number of positions per category (left)
+    ax_totals.barh(y, category_totals.to_numpy(), height=0.5, color='black')
+    for y_category, total in zip(y, category_totals):
+        ax_totals.annotate(
+            f'{total:,}', (total, y_category), xytext=(-3, 0), textcoords='offset points', ha='right', va='center')
+    ax_totals.set_xlim(category_totals.max() * 1.4, 0)
+    ax_totals.set_xlabel('Total')
+    ax_totals.tick_params(axis='y', left=False, labelleft=False)
+    ax_totals.spines[['top', 'left', 'right']].set_visible(False)
+
+    fig.savefig(png_out, dpi=300, bbox_inches='tight')
+    pyplot.close(fig)
 
 
 def create_analysis_info_section(config_: dict[str, Any]) -> HtmlReportSection:
