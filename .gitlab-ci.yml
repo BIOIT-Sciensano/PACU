@@ -8,14 +8,12 @@ variables:
 
 ruff:
   stage: lint
-  image: ghcr.io/astral-sh/uv:python3.12-bookworm-slim
   script:
     - uvx ruff check .
     - uvx ruff format --check .
 
 tests:
   stage: test
-  image: ghcr.io/prefix-dev/pixi:0.47.0
   timeout: 1h
   script:
     - pixi install
@@ -23,7 +21,6 @@ tests:
 
 build:
   stage: build
-  image: ghcr.io/astral-sh/uv:python3.12-bookworm-slim
   rules:
     - if: $CI_COMMIT_TAG
   script:
