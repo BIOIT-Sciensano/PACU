@@ -41,9 +41,20 @@ def run_snakemake(snakefile: Path, config_path: Path, targets: list[Path], dir_:
         dir_.mkdir(parents=True)
 
     # Create and run command
-    command = Command(' '.join([
-        'snakemake', *[str(x) for x in targets], '--snakefile', str(snakefile), '--configfile', str(config_path),
-        '--cores', str(threads)]))
+    command = Command(
+        ' '.join(
+            [
+                'snakemake',
+                *[str(x) for x in targets],
+                '--snakefile',
+                str(snakefile),
+                '--configfile',
+                str(config_path),
+                '--cores',
+                str(threads),
+            ]
+        )
+    )
     command.run(dir_)
 
     # Check if command executed successfully

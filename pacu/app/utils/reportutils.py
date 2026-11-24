@@ -11,6 +11,12 @@ from pacu.app.report.htmlelement import HtmlElement
 from pacu.app.report.htmlreportsection import HtmlReportSection
 from pacu.app.report.htmltablecell import HtmlTableCell
 
+# Thresholds for the colors in the read mapping table (green: >= *_GREEN_MIN, red: < *_RED_MAX, otherwise orange)
+DEPTH_GREEN_MIN = 20
+DEPTH_RED_MAX = 10
+COVERAGE_GREEN_MIN = 95
+COVERAGE_RED_MAX = 90
+
 
 def create_upsetplot_overlap(data_overlap: pd.DataFrame, png_out: Path) -> None:
     """
@@ -66,7 +72,8 @@ def create_upsetplot_overlap(data_overlap: pd.DataFrame, png_out: Path) -> None:
     ax_totals.barh(y, category_totals.to_numpy(), height=0.5, color='black')
     for y_category, total in zip(y, category_totals):
         ax_totals.annotate(
-            f'{total:,}', (total, y_category), xytext=(-3, 0), textcoords='offset points', ha='right', va='center')
+            f'{total:,}', (total, y_category), xytext=(-3, 0), textcoords='offset points', ha='right', va='center'
+        )
     ax_totals.set_xlim(category_totals.max() * 1.4, 0)
     ax_totals.set_xlabel('Total')
     ax_totals.tick_params(axis='y', left=False, labelleft=False)
@@ -85,12 +92,15 @@ def create_analysis_info_section(config_: dict[str, Any]) -> HtmlReportSection:
     section = HtmlReportSection('Analysis info')
 
     # Analysis info
-    section.add_table([
-        ['Workflow version:', version.__version__],
-        ['Analysis date:', datetime.datetime.now().strftime('%d/%m/%Y - %X')],
-        ['Nb. of samples:', str(len(config_['input'].keys()))],
-        ['Phylogenetic method:', config_.get('phylogeny_method', 'iqtree')],
-    ], table_attributes=[('class', 'information')])
+    section.add_table(
+        [
+            ['Workflow version:', version.__version__],
+            ['Analysis date:', datetime.datetime.now().strftime('%d/%m/%Y - %X')],
+            ['Nb. of samples:', str(len(config_['input'].keys()))],
+            ['Phylogenetic method:', config_.get('phylogeny_method', 'iqtree')],
+        ],
+        table_attributes=[('class', 'information')],
+    )
 
     # Citation disclaimer
     section.add_header('Disclaimer', 2)
@@ -107,13 +117,17 @@ def create_parameter_section(config_: dict[str, Any]) -> HtmlReportSection:
     :return: Section
     """
     section = HtmlReportSection('Parameters')
-    section.add_table([
-        ['Min. global depth <small>(--min-global-depth)</small>', f"{config_['depth']['min_depth']:.2f}"],
-        ['Min. SNP allele frequency <small>(--min-snp-af)</small>', f"{config_['filters']['min_af']:.2f}"],
-        ['Min. SNP depth <small>(--min-snp-depth)</small>', str(config_['filters']['min_depth'])],
-        ['Min. SNP quality <small>(--min-snp-qual)</small>', str(config_['filters']['min_qual'])],
-        ['Min. SNP distance <small>(--min-snp-dist)</small>', str(config_['filters']['min_dist'])],
-    ], column_names=['Parameter', 'Value'], table_attributes=[('class', 'data')])
+    section.add_table(
+        [
+            ['Min. global depth <small>(--min-global-depth)</small>', f"{config_['depth']['min_depth']:.2f}"],
+            ['Min. SNP allele frequency <small>(--min-snp-af)</small>', f"{config_['filters']['min_af']:.2f}"],
+            ['Min. SNP depth <small>(--min-snp-depth)</small>', str(config_['filters']['min_depth'])],
+            ['Min. SNP quality <small>(--min-snp-qual)</small>', str(config_['filters']['min_qual'])],
+            ['Min. SNP distance <small>(--min-snp-dist)</small>', str(config_['filters']['min_dist'])],
+        ],
+        column_names=['Parameter', 'Value'],
+        table_attributes=[('class', 'data')],
+    )
     return section
 
 
@@ -124,9 +138,9 @@ def __get_colored_cell_depth(value: int) -> HtmlTableCell:
     :return: Table cell
     """
     value_str = f'{value:,}'
-    if value >= 20:
+    if value >= DEPTH_GREEN_MIN:
         color = 'green'
-    elif value < 10:
+    elif value < DEPTH_RED_MAX:
         color = 'red'
     else:
         color = 'orange'
@@ -140,9 +154,9 @@ def __get_colored_cell_coverage(value: int) -> HtmlTableCell:
     :return: Table cell
     """
     value_str = f'{value:.2f}%'
-    if value >= 95:
+    if value >= COVERAGE_GREEN_MIN:
         color = 'green'
-    elif value < 90:
+    elif value < COVERAGE_RED_MAX:
         color = 'red'
     else:
         color = 'orange'
@@ -160,15 +174,22 @@ def create_mapping_section(path_stats: Path, path_ref: Path) -> HtmlReportSectio
     data_vc = pd.read_table(path_stats)
     header = ['Isolate', 'Median  depth', '% covered']
     section.add_paragraph(f'Reference genome: {path_ref.name}')
-    section.add_table([[
-        row['key'],
-        __get_colored_cell_depth(row['median_depth']),
-        __get_colored_cell_coverage(row['perc_covered']),
-    ] for row in data_vc.to_dict('records')], header, [('class', 'data')])
+    section.add_table(
+        [
+            [
+                row['key'],
+                __get_colored_cell_depth(row['median_depth']),
+                __get_colored_cell_coverage(row['perc_covered']),
+            ]
+            for row in data_vc.to_dict('records')
+        ],
+        header,
+        [('class', 'data')],
+    )
     section.add_paragraph(
         """
-        Datasets with a median depth between 20x-10x are displayed in orange (warning). Datasets with a median depth 
-        <10x are displayed in red and should be re-sequenced. The genome coverage cut-offs are 95% (warning) and 90% 
+        Datasets with a median depth between 20x-10x are displayed in orange (warning). Datasets with a median depth
+        <10x are displayed in red and should be re-sequenced. The genome coverage cut-offs are 95% (warning) and 90%
         (error).
         """
     )
@@ -187,13 +208,21 @@ def create_variant_calling_section(path_stats: Path) -> HtmlReportSection:
         {'key': 'key', 'header': 'Isolate'},
         {'key': 'nb_variants', 'header': 'Number of variants', 'fmt': lambda x: f'{x:,}'},
         {'key': 'nb_variants_filtered', 'header': 'Number of variants (Filtered)', 'fmt': lambda x: f'{x:,}'},
-        {'key': 'perc_passed', 'header': '% passing filtering',
-         'fmt': lambda x: f'{x:.2f}' if not pd.isna(x) else 'n/a'},
+        {
+            'key': 'perc_passed',
+            'header': '% passing filtering',
+            'fmt': lambda x: f'{x:.2f}' if not pd.isna(x) else 'n/a',
+        },
     ]
     # noinspection PyCallingNonCallable
-    section.add_table([
-        [col['fmt'](row[col['key']]) if col.get('fmt') is not None else row[col['key']] for col in columns] for
-        row in data_vc.to_dict('records')], [c['header'] for c in columns], [('class', 'data')])
+    section.add_table(
+        [
+            [col['fmt'](row[col['key']]) if col.get('fmt') is not None else row[col['key']] for col in columns]
+            for row in data_vc.to_dict('records')
+        ],
+        [c['header'] for c in columns],
+        [('class', 'data')],
+    )
     return section
 
 
@@ -215,9 +244,14 @@ def create_region_filtering_section(path_stats: Path, path_png: Path, skip_gubbi
         {'key': 'perc_ref_covered', 'header': '% covered', 'fmt': lambda x: f'{x:.2f}'},
     ]
     # noinspection PyCallingNonCallable
-    section.add_table([
-        [col['fmt'](row[col['key']]) if col.get('fmt') is not None else row[col['key']] for col in columns] for
-        row in data_regions.to_dict('records')], [c['header'] for c in columns], [('class', 'data')])
+    section.add_table(
+        [
+            [col['fmt'](row[col['key']]) if col.get('fmt') is not None else row[col['key']] for col in columns]
+            for row in data_regions.to_dict('records')
+        ],
+        [c['header'] for c in columns],
+        [('class', 'data')],
+    )
 
     if skip_gubbins:
         section.add_warning_message('Gubbins was disabled.')
@@ -229,8 +263,9 @@ def create_region_filtering_section(path_stats: Path, path_png: Path, skip_gubbi
     return section
 
 
-def create_tree_section(path_nwk: Path, path_png: Path, path_snp_matrix: Path, path_snp_pos: Path,
-                        model_name: str) -> HtmlReportSection:
+def create_tree_section(
+    path_nwk: Path, path_png: Path, path_snp_matrix: Path, path_snp_pos: Path, model_name: str
+) -> HtmlReportSection:
     """
     Creates the section with the visualization of the tree.
     :param path_nwk: Newick tree
@@ -246,10 +281,14 @@ def create_tree_section(path_nwk: Path, path_png: Path, path_snp_matrix: Path, p
     relative_path_snp_matrix = Path('snp_matrix', path_snp_matrix.name)
     relative_path_snp_pos = Path('snp_matrix', path_snp_pos.name)
     section.add_header('SNP matrix', 4)
-    section.add_table([
-        ['SNP matrix', HtmlTableCell('Download (FASTA)', link=str(relative_path_snp_matrix))],
-        ['SNP positions', HtmlTableCell('Download (TSV)', link=str(relative_path_snp_pos))]
-    ], ['File', 'Download'], [('class', 'data')])
+    section.add_table(
+        [
+            ['SNP matrix', HtmlTableCell('Download (FASTA)', link=str(relative_path_snp_matrix))],
+            ['SNP positions', HtmlTableCell('Download (TSV)', link=str(relative_path_snp_pos))],
+        ],
+        ['File', 'Download'],
+        [('class', 'data')],
+    )
     section.add_file(path_snp_matrix, relative_path_snp_matrix)
     section.add_file(path_snp_pos, relative_path_snp_pos)
 
@@ -277,11 +316,13 @@ def create_snp_distances_section(path_distances: Path) -> HtmlReportSection:
     section = HtmlReportSection('Pair-wise SNP distances')
     data_snp_dists = pd.read_table(path_distances)
     header = [HtmlElement('th', '')] + [
-        HtmlElement('th', col, [('style', 'writing-mode: vertical-lr;')]) for col in data_snp_dists.columns[1:]]
+        HtmlElement('th', col, [('style', 'writing-mode: vertical-lr;')]) for col in data_snp_dists.columns[1:]
+    ]
     section.add_table(
-        [header] +
-        [[record[col] for col in data_snp_dists.columns] for record in data_snp_dists.to_dict('records')],
-        None, [('class', 'data')])
+        [header] + [[record[col] for col in data_snp_dists.columns] for record in data_snp_dists.to_dict('records')],
+        None,
+        [('class', 'data')],
+    )
     return section
 
 
@@ -298,7 +339,7 @@ def create_citations_section() -> HtmlReportSection:
         'Quinlan_2010-bedtools',
         'Nguyen_2015-iq_tree',
         'Kalyaanamoorthy_2017-iq_tree_model',
-        'Kumar_2018-megax'
+        'Kumar_2018-megax',
     ]
     for citation_key in keys:
         section.add_html_object(HtmlCitation.parse_from_json(citation_key))

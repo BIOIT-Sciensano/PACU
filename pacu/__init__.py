@@ -15,6 +15,7 @@ from .version import __version__
 
 MIN_NB_SAMPLES = 4
 
+
 class PACU:
     """
     Main class to run the PACU pipeline.
@@ -28,7 +29,8 @@ class PACU:
         """
         self._args = PACU._parse_arguments(args)
         self._path_html_out = self._args.output.absolute() / (
-            self._args.output_html if self._args.output_html else 'report.html')
+            self._args.output_html if self._args.output_html else 'report.html'
+        )
         if self._path_html_out.exists():
             self._path_html_out.unlink()
 
@@ -49,7 +51,8 @@ class PACU:
         # Run Snakemake workflow
         path_config = self.__create_config_file()
         snakemakeutils.run_snakemake(
-            path_snakefile, path_config, [self._path_html_out], self._args.dir_working, self._args.threads)
+            path_snakefile, path_config, [self._path_html_out], self._args.dir_working, self._args.threads
+        )
         logger.info(f'Workflow finished successfully, output available in: {self._args.output}')
 
         # Copy the log file if it exists
@@ -70,17 +73,19 @@ class PACU:
         parser.add_argument('--ont-in', help='Directory with ONT input BAM files')
         parser.add_argument('--ref-fasta', required=True, help='Reference FASTA file', type=path_to_absolute)
         parser.add_argument('--ref-bed', type=path_to_absolute, help='BED file with phage regions')
-        parser.add_argument(
-            '--dir-working', type=path_to_absolute, help='Working directory', default=Path.cwd())
+        parser.add_argument('--dir-working', type=path_to_absolute, help='Working directory', default=Path.cwd())
         parser.add_argument('--output', required=True, type=path_to_absolute, help='Output directory')
         parser.add_argument('--output-html', type=path_to_absolute, help='Output report name')
 
         # Parameters
         parser.add_argument(
-            '--use-mega', action='store_true',
-            help='If set, MEGA is used for the construction of the phylogeny (instead of IQ-TREE)')
+            '--use-mega',
+            action='store_true',
+            help='If set, MEGA is used for the construction of the phylogeny (instead of IQ-TREE)',
+        )
         parser.add_argument(
-            '--include-ref', action='store_true', help='If set, the reference genome is included in the phylogeny')
+            '--include-ref', action='store_true', help='If set, the reference genome is included in the phylogeny'
+        )
         parser.add_argument('--min-snp-af', type=float, default=0.90, help='Minimum allele frequency for variants')
         parser.add_argument('--min-snp-qual', type=int, default=25, help='Minimum SNP quality')
         parser.add_argument('--min-snp-depth', type=int, default=5, help='Minimum SNP depth')
@@ -88,12 +93,17 @@ class PACU:
         parser.add_argument('--skip-gubbins', action='store_true', help='If set, gubbins is skipped')
         # parser.add_argument('--min-sb-pv', type=float, default=0, help='Minimum P-value for strand bias')
         parser.add_argument(
-            '--min-global-depth', type=int, default=5,
-            help='Minimum depth for all samples to include positions in SNP analysis')
+            '--min-global-depth',
+            type=int,
+            default=5,
+            help='Minimum depth for all samples to include positions in SNP analysis',
+        )
         parser.add_argument('--min-mq-depth', type=int, default=5, help='MQ cutoff for samtools depth')
         parser.add_argument(
-            '--bcftools-filt-af1', action='store_true',
-            help='If enabled, allele frequency filtering also considers the VAF value')
+            '--bcftools-filt-af1',
+            action='store_true',
+            help='If enabled, allele frequency filtering also considers the VAF value',
+        )
 
         # Image
         parser.add_argument('--image-width', type=int, default=480, help='Image width')
@@ -101,8 +111,7 @@ class PACU:
 
         # Threads
         parser.add_argument('--threads', type=int, default=4)
-        parser.add_argument(
-            '--version', help='Print version and exit', action='version', version=f'PACU {__version__}')
+        parser.add_argument('--version', help='Print version and exit', action='version', version=f'PACU {__version__}')
 
         return parser.parse_args(args)
 
@@ -120,38 +129,31 @@ class PACU:
                 input_dict[bam_file.stem] = {'bam': str(bam_file.absolute()), 'tech': 'ont'}
         if len(input_dict) == 0:
             raise FileNotFoundError(
-                f'No input datasets found (searched in Illumina={self._args.ilmn_in}, ONT={self._args.ont_in})')
+                f'No input datasets found (searched in Illumina={self._args.ilmn_in}, ONT={self._args.ont_in})'
+            )
         if len(input_dict) < MIN_NB_SAMPLES:
             raise ValueError(
-                f'At least four input BAM files are required (for bootstrapping), {len(input_dict)} found.')
+                f'At least four input BAM files are required (for bootstrapping), {len(input_dict)} found.'
+            )
 
         config_data = {
-            'depth': {
-                'min_mq': self._args.min_mq_depth,
-                'min_depth': 5
-            },
+            'depth': {'min_mq': self._args.min_mq_depth, 'min_depth': 5},
             'filters': {
                 'min_af': self._args.min_snp_af,
                 'min_depth': self._args.min_snp_depth,
                 'min_qual': self._args.min_snp_qual,
-                'min_dist': self._args.min_snp_dist
+                'min_dist': self._args.min_snp_dist,
             },
-            'image': {
-                'width': self._args.image_width,
-                'height': self._args.image_height
-            },
+            'image': {'width': self._args.image_width, 'height': self._args.image_height},
             'skip_gubbins': self._args.skip_gubbins,
             'include_ref': self._args.include_ref,
             'input': input_dict,
             'phylogeny_method': 'mega' if self._args.use_mega else 'iqtree',
-            'output': {
-                'html': str(self._path_html_out),
-                'dir': str(self._args.output.absolute())
-            },
+            'output': {'html': str(self._path_html_out), 'dir': str(self._args.output.absolute())},
             'reference': {
                 'fasta': str(self._args.ref_fasta.absolute()),
                 'bed_phages': str(self._args.ref_bed.absolute()),
-            }
+            },
         }
         return Path(snakemakeutils.generate_config_file(config_data, self._args.dir_working.absolute()))
 

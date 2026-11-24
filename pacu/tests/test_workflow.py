@@ -19,14 +19,22 @@ class TestWorkflow(unittest.TestCase):
         """
         with tempfile.TemporaryDirectory(prefix='pacu') as dir_:
             dir_out = Path(dir_, 'output')
-            workflow = PACU([
-                '--ref-fasta', str(files('pacu').joinpath('resources/testdata/NC_002695.2-subset.fasta')),
-                '--ilmn-in', str(files('pacu').joinpath('resources/testdata/bam/ilmn')),
-                '--ont-in', str(files('pacu').joinpath('resources/testdata/bam/ont')),
-                '--dir-working', str(dir_),
-                '--output', str(dir_out),
-                '--threads', '8'
-            ])
+            workflow = PACU(
+                [
+                    '--ref-fasta',
+                    str(files('pacu').joinpath('resources/testdata/NC_002695.2-subset.fasta')),
+                    '--ilmn-in',
+                    str(files('pacu').joinpath('resources/testdata/bam/ilmn')),
+                    '--ont-in',
+                    str(files('pacu').joinpath('resources/testdata/bam/ont')),
+                    '--dir-working',
+                    str(dir_),
+                    '--output',
+                    str(dir_out),
+                    '--threads',
+                    '8',
+                ]
+            )
             workflow.run()
 
     def test_snp_workflow_mega(self) -> None:
@@ -35,15 +43,23 @@ class TestWorkflow(unittest.TestCase):
         """
         with tempfile.TemporaryDirectory(prefix='pacu') as dir_:
             dir_out = Path(dir_, 'output')
-            workflow = PACU([
-                '--ref-fasta', str(files('pacu').joinpath('resources/testdata/NC_002695.2-subset.fasta')),
-                '--ilmn-in', str(files('pacu').joinpath('resources/testdata/bam/ilmn')),
-                '--ont-in', str(files('pacu').joinpath('resources/testdata/bam/ont')),
-                '--use-mega',
-                '--dir-working', str(dir_),
-                '--output', str(dir_out),
-                '--threads', '8'
-            ])
+            workflow = PACU(
+                [
+                    '--ref-fasta',
+                    str(files('pacu').joinpath('resources/testdata/NC_002695.2-subset.fasta')),
+                    '--ilmn-in',
+                    str(files('pacu').joinpath('resources/testdata/bam/ilmn')),
+                    '--ont-in',
+                    str(files('pacu').joinpath('resources/testdata/bam/ont')),
+                    '--use-mega',
+                    '--dir-working',
+                    str(dir_),
+                    '--output',
+                    str(dir_out),
+                    '--threads',
+                    '8',
+                ]
+            )
             workflow.run()
 
     def test_snp_workflow_no_gubbins(self) -> None:
@@ -52,15 +68,23 @@ class TestWorkflow(unittest.TestCase):
         """
         with tempfile.TemporaryDirectory(prefix='pacu') as dir_:
             dir_out = Path(dir_, 'output')
-            workflow = PACU([
-                '--ref-fasta', str(files('pacu').joinpath('resources/testdata/NC_002695.2-subset.fasta')),
-                '--ilmn-in', str(files('pacu').joinpath('resources/testdata/bam/ilmn')),
-                '--ont-in', str(files('pacu').joinpath('resources/testdata/bam/ont')),
-                '--skip-gubbins',
-                '--dir-working', str(dir_),
-                '--output', str(dir_out),
-                '--threads', '8'
-            ])
+            workflow = PACU(
+                [
+                    '--ref-fasta',
+                    str(files('pacu').joinpath('resources/testdata/NC_002695.2-subset.fasta')),
+                    '--ilmn-in',
+                    str(files('pacu').joinpath('resources/testdata/bam/ilmn')),
+                    '--ont-in',
+                    str(files('pacu').joinpath('resources/testdata/bam/ont')),
+                    '--skip-gubbins',
+                    '--dir-working',
+                    str(dir_),
+                    '--output',
+                    str(dir_out),
+                    '--threads',
+                    '8',
+                ]
+            )
             workflow.run()
 
     def test_snp_workflow_include_ref(self) -> None:
@@ -69,16 +93,24 @@ class TestWorkflow(unittest.TestCase):
         """
         with tempfile.TemporaryDirectory(prefix='pacu') as dir_:
             dir_out = Path(dir_, 'output')
-            workflow = PACU([
-                '--ref-fasta', str(files('pacu').joinpath('resources/testdata/NC_002695.2-subset.fasta')),
-                '--ilmn-in', str(files('pacu').joinpath('resources/testdata/bam/ilmn')),
-                '--ont-in', str(files('pacu').joinpath('resources/testdata/bam/ont')),
-                '--include-ref',
-                '--skip-gubbins',
-                '--dir-working', str(dir_),
-                '--output', str(dir_out),
-                '--threads', '8'
-            ])
+            workflow = PACU(
+                [
+                    '--ref-fasta',
+                    str(files('pacu').joinpath('resources/testdata/NC_002695.2-subset.fasta')),
+                    '--ilmn-in',
+                    str(files('pacu').joinpath('resources/testdata/bam/ilmn')),
+                    '--ont-in',
+                    str(files('pacu').joinpath('resources/testdata/bam/ont')),
+                    '--include-ref',
+                    '--skip-gubbins',
+                    '--dir-working',
+                    str(dir_),
+                    '--output',
+                    str(dir_out),
+                    '--threads',
+                    '8',
+                ]
+            )
             workflow.run()
 
             # Verify that the reference is included in the SNP matrix

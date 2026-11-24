@@ -77,11 +77,21 @@ class HtmlReportSection(HtmlElement):
         :return: Relative path
         """
         logging.info(f"Adding file to report section: {relative_path}")
-        self._files.append((input_file, relative_path,))
+        self._files.append(
+            (
+                input_file,
+                relative_path,
+            )
+        )
         return relative_path
 
-    def add_table(self, data: list[Sequence[Union[str, int, 'HtmlBase']]], column_names: list[str] = None,
-                  table_attributes: list[tuple[str, str]] = None, msg_if_empty: str = 'None found') -> None:
+    def add_table(
+        self,
+        data: list[Sequence[Union[str, int, 'HtmlBase']]],
+        column_names: list[str] = None,
+        table_attributes: list[tuple[str, str]] = None,
+        msg_if_empty: str = 'None found',
+    ) -> None:
         """
         Adds a table to the report section.
         :param data: Table data

@@ -29,7 +29,7 @@ def trimmomatic_collect_output(dir_out: Path) -> dict[str, Path]:
     try:
         fq_dict: dict[str, Path | None] = {
             '1P': next(dir_out.glob('*_1P.fastq.gz')),
-            '2P': next(dir_out.glob('*_2P.fastq.gz'))
+            '2P': next(dir_out.glob('*_2P.fastq.gz')),
         }
     except StopIteration:
         raise FileNotFoundError('No paired end reads survived trimming')
