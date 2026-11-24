@@ -42,9 +42,9 @@ The PACU workflow has the following dependencies:
 - [bcftools](https://github.com/samtools/bcftools) (tested with 1.24)
 - [FigTree](http://tree.bio.ed.ac.uk/software/figtree/) (tested with 1.4.4)
 - [samtools](https://github.com/samtools/samtools) (tested with 1.24)
-- [Gubbins](https://github.com/nickjcroucher/gubbins) (tested with 3.4.3)
+- [Gubbins](https://github.com/nickjcroucher/gubbins) (tested with 3.5)
 - [snp-dists](https://github.com/tseemann/snp-dists) (tested with 1.2.0)
-- [IQ-TREE 2](https://github.com/iqtree/iqtree2) (tested with 2.4.0, IQ-TREE 3 is not supported yet)
+- [IQ-TREE 3](https://github.com/iqtree/iqtree3) (tested with 3.1.4, IQ-TREE 2 is no longer supported)
 - [MEGA](https://www.megasoftware.net/) (optional, only required when using `--use-mega`)
 
 The mapping script has the following additional dependencies:
@@ -58,11 +58,10 @@ Other versions of these tools may work, but have not been tested.
 
 The required Python packages are listed in the `pyproject.toml` file and are installed automatically by `pip`.
 A `requirements.txt` file with pinned versions (generated with `pip-compile`) is also available.
-PACU requires Python 3.10 or newer, but has only been tested with Python 3.10 (Gubbins is currently not available for 
-newer Python versions on Bioconda).
+PACU requires Python 3.11 or newer.
 
 ```bash
-python3.10 -m venv pacu_env
+python3 -m venv pacu_env
 . pacu_env/bin/activate
 pip install pacu_snp
 ```

@@ -13,6 +13,7 @@ from pacu.app.utils.loggingutils import logger
 from .app.utils.cliutils import path_to_absolute
 from .version import __version__
 
+MIN_NB_SAMPLES = 4
 
 class PACU:
     """
@@ -120,7 +121,7 @@ class PACU:
         if len(input_dict) == 0:
             raise FileNotFoundError(
                 f'No input datasets found (searched in Illumina={self._args.ilmn_in}, ONT={self._args.ont_in})')
-        if len(input_dict) < 4:
+        if len(input_dict) < MIN_NB_SAMPLES:
             raise ValueError(
                 f'At least four input BAM files are required (for bootstrapping), {len(input_dict)} found.')
 
@@ -172,7 +173,7 @@ class PACU:
         if self._args.use_mega:
             commands['MEGA'] = 'megacc --version'
         else:
-            commands['IQ-TREE'] = 'iqtree2 --version'
+            commands['IQ-TREE'] = 'iqtree3 --version'
         logger.info('Checking dependencies')
         for tool, command in commands.items():
             command = Command(command)
