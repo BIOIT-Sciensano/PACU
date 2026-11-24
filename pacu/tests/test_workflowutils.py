@@ -42,26 +42,34 @@ class TestWorkflowUtils(unittest.TestCase):
         Tests the 'determine_name_from_fq' function with Illumina input.
         :return: None
         """
-        self.assertEqual(workflowutils.determine_name_from_fq(
-            fq_illumina_1p=Path('/path/to/my-reads_1P.fastq')), 'my-reads')
-        self.assertEqual(workflowutils.determine_name_from_fq(
-            fq_illumina_1p=Path('/path/to/input_file_1.fastq.gz')), 'input_file')
-        self.assertEqual(workflowutils.determine_name_from_fq(
-            fq_illumina_1p=Path('/path/to/reads_1.fq')), 'reads')
-        self.assertEqual(workflowutils.determine_name_from_fq(
-            fq_illumina_1p=Path('/path/to/reads_1P.fq.gz')), 'reads')
-        self.assertEqual(workflowutils.determine_name_from_fq(
-            fq_illumina_1p=Path('/path/to/reads_S22_L001_R1_001.fastq.gz')), 'reads_S22')
-        self.assertEqual(workflowutils.determine_name_from_fq(
-            fq_illumina_1p=Path('/path/to/reads_S22_L001_R1_001.fq.gz')), 'reads_S22')
-        self.assertEqual(workflowutils.determine_name_from_fq(
-            fq_illumina_1p=Path('/path/to/unknown_pattern.fastq')), 'unknown_pattern')
-        self.assertEqual(workflowutils.determine_name_from_fq(
-            fq_illumina_1p=Path('/path/to/unknown_pattern.fastq.gz')), 'unknown_pattern')
-        self.assertEqual(workflowutils.determine_name_from_fq(
-            fq_illumina_1p=Path('/path/to/reads_R1.fq')), 'reads')
-        self.assertEqual(workflowutils.determine_name_from_fq(
-            fq_illumina_1p=Path('/path/to/reads_R1.fastq.gz')), 'reads')
+        self.assertEqual(
+            workflowutils.determine_name_from_fq(fq_illumina_1p=Path('/path/to/my-reads_1P.fastq')), 'my-reads'
+        )
+        self.assertEqual(
+            workflowutils.determine_name_from_fq(fq_illumina_1p=Path('/path/to/input_file_1.fastq.gz')), 'input_file'
+        )
+        self.assertEqual(workflowutils.determine_name_from_fq(fq_illumina_1p=Path('/path/to/reads_1.fq')), 'reads')
+        self.assertEqual(workflowutils.determine_name_from_fq(fq_illumina_1p=Path('/path/to/reads_1P.fq.gz')), 'reads')
+        self.assertEqual(
+            workflowutils.determine_name_from_fq(fq_illumina_1p=Path('/path/to/reads_S22_L001_R1_001.fastq.gz')),
+            'reads_S22',
+        )
+        self.assertEqual(
+            workflowutils.determine_name_from_fq(fq_illumina_1p=Path('/path/to/reads_S22_L001_R1_001.fq.gz')),
+            'reads_S22',
+        )
+        self.assertEqual(
+            workflowutils.determine_name_from_fq(fq_illumina_1p=Path('/path/to/unknown_pattern.fastq')),
+            'unknown_pattern',
+        )
+        self.assertEqual(
+            workflowutils.determine_name_from_fq(fq_illumina_1p=Path('/path/to/unknown_pattern.fastq.gz')),
+            'unknown_pattern',
+        )
+        self.assertEqual(workflowutils.determine_name_from_fq(fq_illumina_1p=Path('/path/to/reads_R1.fq')), 'reads')
+        self.assertEqual(
+            workflowutils.determine_name_from_fq(fq_illumina_1p=Path('/path/to/reads_R1.fastq.gz')), 'reads'
+        )
 
     def test_parse_bed(self) -> None:
         """
@@ -78,10 +86,10 @@ class TestWorkflowUtils(unittest.TestCase):
             path_bed = Path(dir_, 'regions.bed')
             path_bed.write_text('track name=phages\n# comment\n\nchr1\t10\t20\tphage_1\t0\t+\n2\t5\t8\n')
             data_bed = workflowutils.parse_bed(path_bed)
-            self.assertEqual(data_bed.to_dict('records'), [
-                {'chr': 'chr1', 'start': 10, 'end': 20},
-                {'chr': '2', 'start': 5, 'end': 8}
-            ])
+            self.assertEqual(
+                data_bed.to_dict('records'),
+                [{'chr': 'chr1', 'start': 10, 'end': 20}, {'chr': '2', 'start': 5, 'end': 8}],
+            )
             self.assertEqual(workflowutils.count_regions(path_bed), 2)
             self.assertEqual(workflowutils.count_regions(str(path_bed)), 2)
             self.assertEqual(workflowutils.count_covered_positions(path_bed), 13)
@@ -95,7 +103,8 @@ class TestWorkflowUtils(unittest.TestCase):
         data['shift_pos'] = data['pos'].shift()
         data['shift_chr'] = data['chr'].shift()
         self.assertEqual(
-            [workflowutils.is_new_region(row) for _, row in data.iterrows()], [False, False, True, True, False])
+            [workflowutils.is_new_region(row) for _, row in data.iterrows()], [False, False, True, True, False]
+        )
 
     def test_calculate_overlaps(self) -> None:
         """
@@ -109,17 +118,19 @@ class TestWorkflowUtils(unittest.TestCase):
             path_gubbins.write_text('c2\t3\t5\n')
             path_depth = Path(dir_, 'depth.bed')
             path_depth.write_text('c1\t2\t4\n')
-            data_overlap = workflowutils.calculate_overlaps(
-                {'c1': 10, 'c2': 5}, path_phages, path_gubbins, path_depth)
+            data_overlap = workflowutils.calculate_overlaps({'c1': 10, 'c2': 5}, path_phages, path_gubbins, path_depth)
 
-        self.assertEqual(data_overlap.to_dict('records'), [
-            {'chr': 'c1', 'pos': 1, 'phages': True, 'gubbins': False, 'depth': False},
-            {'chr': 'c1', 'pos': 2, 'phages': True, 'gubbins': False, 'depth': False},
-            {'chr': 'c1', 'pos': 3, 'phages': True, 'gubbins': False, 'depth': True},
-            {'chr': 'c1', 'pos': 4, 'phages': False, 'gubbins': False, 'depth': True},
-            {'chr': 'c2', 'pos': 4, 'phages': False, 'gubbins': True, 'depth': False},
-            {'chr': 'c2', 'pos': 5, 'phages': False, 'gubbins': True, 'depth': False},
-        ])
+        self.assertEqual(
+            data_overlap.to_dict('records'),
+            [
+                {'chr': 'c1', 'pos': 1, 'phages': True, 'gubbins': False, 'depth': False},
+                {'chr': 'c1', 'pos': 2, 'phages': True, 'gubbins': False, 'depth': False},
+                {'chr': 'c1', 'pos': 3, 'phages': True, 'gubbins': False, 'depth': True},
+                {'chr': 'c1', 'pos': 4, 'phages': False, 'gubbins': False, 'depth': True},
+                {'chr': 'c2', 'pos': 4, 'phages': False, 'gubbins': True, 'depth': False},
+                {'chr': 'c2', 'pos': 5, 'phages': False, 'gubbins': True, 'depth': False},
+            ],
+        )
 
     def test_sanitize_input_name(self) -> None:
         """

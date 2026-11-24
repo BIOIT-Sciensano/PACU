@@ -25,9 +25,8 @@ class TestSNPMatrixUtils(unittest.TestCase):
             # Create SNP matrix
             path_out = Path(dir_, 'snp_matrix.fasta')
             snpmatrixutils.create_snp_matrix(
-                TestSNPMatrixUtils.paths_vcf,
-                [p.name for p in TestSNPMatrixUtils.paths_vcf],
-                path_out)
+                TestSNPMatrixUtils.paths_vcf, [p.name for p in TestSNPMatrixUtils.paths_vcf], path_out
+            )
 
             # Verify output file
             with path_out.open() as handle:
@@ -49,7 +48,7 @@ class TestSNPMatrixUtils(unittest.TestCase):
                 TestSNPMatrixUtils.paths_vcf,
                 [p.name for p in TestSNPMatrixUtils.paths_vcf],
                 path_out,
-                path_tsv=path_tsv_out
+                path_tsv=path_tsv_out,
             )
 
             # Verify output SNP matrix
@@ -57,8 +56,8 @@ class TestSNPMatrixUtils(unittest.TestCase):
                 seqs = list(SeqIO.parse(handle, 'fasta'))
                 self.assertTrue(all(len(s) > 0 for s in seqs), 'SNP matrix contains empty sequence(s)')
                 self.assertTrue(
-                    all(len(s) == len(seqs[0]) for s in seqs),
-                    'SNP matrix contains sequences of varying lengths')
+                    all(len(s) == len(seqs[0]) for s in seqs), 'SNP matrix contains sequences of varying lengths'
+                )
                 sequence_length = len(seqs[0])
 
             # Verify output SNP positions TSV file

@@ -108,19 +108,25 @@ class MapToRef:
         dir_trim.mkdir(exist_ok=True, parents=True)
 
         # Run trimming
-        command = Command(' '.join([
-            'trimmomatic', 'PE',
-            '-baseout', f'{self._name}.fastq.gz',
-            f'-threads {self._args.threads}',
-            str(self._args.fastq_illumina[0]),
-            str(self._args.fastq_illumina[1]),
-            f"ILLUMINACLIP:{Path(trimmingutils.trimmomatic_dir_adapters(), 'NexteraPE-PE.fa')}:2:30:10",
-            'LEADING:10',
-            'TRAILING:10',
-            'SLIDINGWINDOW:4:20',
-            'MINLEN:40',
-            '-phred33'
-        ]))
+        command = Command(
+            ' '.join(
+                [
+                    'trimmomatic',
+                    'PE',
+                    '-baseout',
+                    f'{self._name}.fastq.gz',
+                    f'-threads {self._args.threads}',
+                    str(self._args.fastq_illumina[0]),
+                    str(self._args.fastq_illumina[1]),
+                    f"ILLUMINACLIP:{Path(trimmingutils.trimmomatic_dir_adapters(), 'NexteraPE-PE.fa')}:2:30:10",
+                    'LEADING:10',
+                    'TRAILING:10',
+                    'SLIDINGWINDOW:4:20',
+                    'MINLEN:40',
+                    '-phred33',
+                ]
+            )
+        )
         command.run(dir_trim)
         if not command.exit_code == 0:
             raise RuntimeError(f'Error trimming reads: {command.stderr}')
@@ -150,7 +156,13 @@ class MapToRef:
         """
         # Construct bowtie2 command
         parts_bt2 = [
-            'bowtie2', '--end-to-end', '--sensitive', f'-x {path_ref}', f"-1 {fq_dict['1P']}", f"-2 {fq_dict['2P']}"]
+            'bowtie2',
+            '--end-to-end',
+            '--sensitive',
+            f'-x {path_ref}',
+            f"-1 {fq_dict['1P']}",
+            f"-2 {fq_dict['2P']}",
+        ]
 
         # Add orphaned reads (if available)
         orphaned_reads = [fq_dict.get(k) for k in ('1U', '2U') if fq_dict.get(k) is not None]
@@ -159,10 +171,7 @@ class MapToRef:
         parts_bt2.append(f'-p {self._args.threads}')
 
         # Execute the command
-        command = Command(' '.join([
-            *parts_bt2,
-            f'| samtools view -b | samtools sort - > {path_out}'
-        ]))
+        command = Command(' '.join([*parts_bt2, f'| samtools view -b | samtools sort - > {path_out}']))
         command.run(self._args.dir_working)
         if not command.exit_code == 0:
             raise RuntimeError(f'Error mapping reads: {command.stderr}')
@@ -182,13 +191,19 @@ class MapToRef:
 
         # Run the command
         path_out = dir_trim / f'{self._name}.fastq.gz'
-        command = Command(' '.join([
-            'seqkit seq',
-            '--min-qual', str(min_qual),
-            '--min-len', str(min_len),
-            str(self._args.fastq_ont),
-            f'> {path_out}'
-        ]))
+        command = Command(
+            ' '.join(
+                [
+                    'seqkit seq',
+                    '--min-qual',
+                    str(min_qual),
+                    '--min-len',
+                    str(min_len),
+                    str(self._args.fastq_ont),
+                    f'> {path_out}',
+                ]
+            )
+        )
         command.run(path_out.parent)
         if not command.exit_code == 0:
             raise RuntimeError(f'Error trimming reads: {command.stderr}')
@@ -217,13 +232,17 @@ class MapToRef:
         :param path_out: Path to output BAM file
         :return: None
         """
-        command = Command(' '.join([
-            'minimap2',
-            f'-a {path_ref}',
-            str(path_fq),
-            f'-t {self._args.threads}',
-            f'| samtools view -b | samtools sort - > {path_out}'
-        ]))
+        command = Command(
+            ' '.join(
+                [
+                    'minimap2',
+                    f'-a {path_ref}',
+                    str(path_fq),
+                    f'-t {self._args.threads}',
+                    f'| samtools view -b | samtools sort - > {path_out}',
+                ]
+            )
+        )
         command.run(self._args.dir_working)
         if not command.exit_code == 0:
             raise RuntimeError(f'Error mapping reads: {command.stderr}')
@@ -241,18 +260,14 @@ class MapToRef:
         parser.add_argument('--fastq-ont', type=path_to_absolute)
         parser.add_argument('--fastq-ont-name', type=str, help='Original FASTQ name (used for Galaxy)')
         parser.add_argument('--fastq-illumina', type=path_to_absolute, nargs=2)
-        parser.add_argument(
-            '--fastq-illumina-names', type=str, nargs=2, help='Original FASTQ names (used for Galaxy)')
+        parser.add_argument('--fastq-illumina-names', type=str, nargs=2, help='Original FASTQ names (used for Galaxy)')
 
         # FASTA input
-        parser.add_argument(
-            '--ref-fasta', required=True, help='Reference FASTA file', type=path_to_absolute)
-        parser.add_argument(
-            '--ref-fasta-name',  type=str, help='Original FASTA file name (used for Galaxy)')
+        parser.add_argument('--ref-fasta', required=True, help='Reference FASTA file', type=path_to_absolute)
+        parser.add_argument('--ref-fasta-name', type=str, help='Original FASTA file name (used for Galaxy)')
 
         # Other options
-        parser.add_argument(
-            '--dir-working', type=path_to_absolute, help='Working directory', default=Path.cwd())
+        parser.add_argument('--dir-working', type=path_to_absolute, help='Working directory', default=Path.cwd())
         parser.add_argument('--trim', action='store_true', help='Trim reads prior to mapping')
         parser.add_argument('--output', required=True, type=path_to_absolute, help='Output BAM file')
         parser.add_argument('--threads', type=int, default=4)
@@ -290,7 +305,8 @@ class MapToRef:
             for idx in (0, 1):
                 is_gzipped = workflowutils.is_gzipped(self._args.fastq_illumina[idx])
                 path_link = Path(
-                    self._args.dir_working, 'input', f'{self._name}_{idx+1}P.fastq' + ('.gz' if is_gzipped else ''))
+                    self._args.dir_working, 'input', f'{self._name}_{idx + 1}P.fastq' + ('.gz' if is_gzipped else '')
+                )
                 logger.debug(f'Creating link: {path_link} -> {self._args.fastq_illumina[idx]}')
                 _create_symlink(path_link.absolute(), self._args.fastq_illumina[idx].absolute())
                 self._args.fastq_illumina[idx] = path_link
@@ -298,7 +314,8 @@ class MapToRef:
             Path(self._args.dir_working, 'input').mkdir(parents=True, exist_ok=True)
             is_gzipped = workflowutils.is_gzipped(self._args.fastq_ont)
             path_link = Path(
-                self._args.dir_working, 'input', f'{self._name}.fastq' + ('.gz' if is_gzipped else '')).absolute()
+                self._args.dir_working, 'input', f'{self._name}.fastq' + ('.gz' if is_gzipped else '')
+            ).absolute()
             logger.debug(f'Creating link: {path_link} -> {self._args.fastq_ont}')
             _create_symlink(path_link, self._args.fastq_ont.absolute())
             self._args.fastq_ont = path_link
@@ -318,6 +335,7 @@ class MapToRef:
             if self._args.fastq_illumina_names is not None:
                 return workflowutils.determine_name_from_fq(fq_illumina_1p=Path(self._args.fastq_illumina_names[0]))
             return workflowutils.determine_name_from_fq(fq_illumina_1p=self._args.fastq_illumina[0])
+
 
 def main() -> None:
     """

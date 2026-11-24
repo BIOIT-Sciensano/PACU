@@ -20,9 +20,7 @@ class TestIqTreeUtils(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix='pacu') as dir_:
             path_out_nwk = Path(dir_, 'iqtree.nwk')
             command = iqtreeutils.run_ml_tree_construction(
-                path_fasta=TestIqTreeUtils.path_fasta,
-                path_out=path_out_nwk,
-                threads=4
+                path_fasta=TestIqTreeUtils.path_fasta, path_out=path_out_nwk, threads=4
             )
 
             # Verify that the model selection worked

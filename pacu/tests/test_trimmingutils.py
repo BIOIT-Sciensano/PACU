@@ -27,7 +27,8 @@ class TestTrimmingUtils(unittest.TestCase):
         with mock.patch.dict(os.environ, {'CONDA_PREFIX': '/conda'}):
             os.environ.pop('TRIMMOMATIC_ADAPTER_DIR', None)
             self.assertEqual(
-                trimmingutils.trimmomatic_dir_adapters(), Path('/conda', 'share', 'trimmomatic', 'adapters'))
+                trimmingutils.trimmomatic_dir_adapters(), Path('/conda', 'share', 'trimmomatic', 'adapters')
+            )
 
     def test_trimmomatic_dir_adapters_not_set(self) -> None:
         """

@@ -17,10 +17,12 @@ class TestReportUtils(unittest.TestCase):
         Tests the 'create_upsetplot_overlap' function.
         :return: None
         """
-        data_overlap = pd.DataFrame([
-            {'chr': 'c1', 'pos': 1, 'phages': True, 'gubbins': False, 'depth': False},
-            {'chr': 'c1', 'pos': 2, 'phages': True, 'gubbins': False, 'depth': True},
-        ])
+        data_overlap = pd.DataFrame(
+            [
+                {'chr': 'c1', 'pos': 1, 'phages': True, 'gubbins': False, 'depth': False},
+                {'chr': 'c1', 'pos': 2, 'phages': True, 'gubbins': False, 'depth': True},
+            ]
+        )
         with tempfile.TemporaryDirectory(prefix='pacu') as dir_:
             path_png = Path(dir_, 'overlap.png')
             reportutils.create_upsetplot_overlap(data_overlap, path_png)

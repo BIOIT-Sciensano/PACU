@@ -26,7 +26,7 @@ class TestMEGAUtils(unittest.TestCase):
                 branch_swap_filter='Very weak',
                 missing_data_treatment='Partial deletion',
                 site_cov_cutoff=50,
-                threads=4
+                threads=4,
             )
 
             # Parse the output file
@@ -40,8 +40,9 @@ class TestMEGAUtils(unittest.TestCase):
         :return: None
         """
         with tempfile.TemporaryDirectory(prefix='pacu') as dir_:
-            path_model_selection_csv = Path(str(files('pacu').joinpath(
-                'resources/testdata/mega/model_selection_output.csv')))
+            path_model_selection_csv = Path(
+                str(files('pacu').joinpath('resources/testdata/mega/model_selection_output.csv'))
+            )
 
             # Run tree building
             path_out_nwk = Path(dir_, 'tree.nwk')
@@ -57,9 +58,9 @@ class TestMEGAUtils(unittest.TestCase):
                     bootstrap_replicates=100,
                     heuristic_method='SPR3',
                     initial_tree='NJ',
-                    gamma_categories=5
+                    gamma_categories=5,
                 ),
-                threads=4
+                threads=4,
             )
 
             # Verify that the output file is OK
