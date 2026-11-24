@@ -676,13 +676,15 @@ rule mega_construct_tree:
             path_csv=Path(input.CSV).absolute(),
             path_out=Path(output.NWK).absolute(),
             dir_=Path(output.NWK).absolute().parent,
-            branch_swap_filter=params.branch_swap_filter,
-            missing_data_treatment=params.missing_data_treatment,
-            site_cov_cutoff=params.site_cov_cutoff,
-            bootstrap_replicates=params.bootstrap_replicates,
-            heuristic_method=params.heuristic_method,
-            initial_tree=params.initial_tree,
-            gamma_categories=params.gamma_categories,
+            settings=megautils.TreeBuildingSettings(
+                branch_swap_filter=params.branch_swap_filter,
+                missing_data_treatment=params.missing_data_treatment,
+                site_cov_cutoff=params.site_cov_cutoff,
+                bootstrap_replicates=params.bootstrap_replicates,
+                heuristic_method=params.heuristic_method,
+                initial_tree=params.initial_tree,
+                gamma_categories=params.gamma_categories
+            ),
             threads=threads
         )
 

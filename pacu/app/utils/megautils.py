@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from importlib.resources import files
 from pathlib import Path
 
@@ -115,21 +116,36 @@ def parse_model_selection_csv(path_csv: Path) -> dict:
     return model_info
 
 
-def __create_config_file_tree_construction(
-        dir_: Path, model: str, branch_swap_filter: str, missing_data_treatment: str, site_cov_cutoff: int | None,
-        bootstrap_replicates: int, heuristic_method: str, initial_tree: str, rates_among_sites: str,
-        gamma_categories: int = 5, threads: int = 4) -> Path:
+@dataclass(frozen=True)
+class TreeBuildingSettings:
     """
-    Generates the config file for the model selection.
-    :param dir_: Working directory
-    :param model: Nucleotide substitution model
+    Settings for the ML tree construction with MEGA.
+    :param branch_swap_filter: Branch swap filter
     :param missing_data_treatment: Missing data treatment option
     :param site_cov_cutoff: Site coverage cut-off threshold
     :param bootstrap_replicates: Number of bootstrap replications
     :param heuristic_method: Heuristic method
     :param initial_tree: Initial tree to start from
-    :param rates_among_sites: Rates among sites
     :param gamma_categories: Number of Gamma categories
+    """
+
+    branch_swap_filter: str
+    missing_data_treatment: str
+    site_cov_cutoff: int | None
+    bootstrap_replicates: int
+    heuristic_method: str
+    initial_tree: str
+    gamma_categories: int = 5
+
+
+def __create_config_file_tree_construction(
+        dir_: Path, model: str, rates_among_sites: str, settings: TreeBuildingSettings, threads: int = 4) -> Path:
+    """
+    Generates the config file for the tree construction.
+    :param dir_: Working directory
+    :param model: Nucleotide substitution model
+    :param rates_among_sites: Rates among sites
+    :param settings: Tree building settings
     :param threads: Number of threads to use
     :return: Path to config file
     """
@@ -143,26 +159,30 @@ def __create_config_file_tree_construction(
     path_out = dir_ / 'config-tree_building.mao'
     with path_out.open('w') as handle:
         handle.write(template.format(
-            bootstrap_replications=bootstrap_replicates,
+            bootstrap_replications=settings.bootstrap_replicates,
             model=model,
-            heuristic_method=HEURISTIC_METHODS[heuristic_method],
-            initial_tree=INITIAL_TREE[initial_tree],
+            heuristic_method=HEURISTIC_METHODS[settings.heuristic_method],
+            initial_tree=INITIAL_TREE[settings.initial_tree],
             rates_among_sites=RATES_AMONG_SITES[rates_among_sites],
-            branch_swap_filter=branch_swap_filter,
-            gamma_categories=gamma_categories,
-            missing_data_treatment=missing_data_treatment,
-            site_coverage_cutoff=site_cov_cutoff,
+            branch_swap_filter=settings.branch_swap_filter,
+            gamma_categories=settings.gamma_categories,
+            missing_data_treatment=settings.missing_data_treatment,
+            site_coverage_cutoff=settings.site_cov_cutoff,
             threads=threads
         ))
     return path_out
 
 
-def run_tree_building(path_fasta: Path, path_csv: Path, path_out: Path, dir_: Path, branch_swap_filter: str,
-                      missing_data_treatment: str, site_cov_cutoff: int | None, bootstrap_replicates: int,
-                      heuristic_method: str, initial_tree: str, gamma_categories: int = 5,
+def run_tree_building(path_fasta: Path, path_csv: Path, path_out: Path, dir_: Path, settings: TreeBuildingSettings,
                       threads: int = 4) -> None:
     """
     Runs the ML tree reconstruction using MEGA.
+    :param path_fasta: Input SNP matrix FASTA file
+    :param path_csv: Model selection output (CSV)
+    :param path_out: Output path
+    :param dir_: Working directory
+    :param settings: Tree building settings
+    :param threads: Number of threads to use
     :return: None
     """
     # Parse model
@@ -170,9 +190,7 @@ def run_tree_building(path_fasta: Path, path_csv: Path, path_out: Path, dir_: Pa
 
     # Create configuration file
     path_config = __create_config_file_tree_construction(
-        dir_, data_model_selection['model_full'], branch_swap_filter, missing_data_treatment, site_cov_cutoff,
-        bootstrap_replicates, heuristic_method, initial_tree, data_model_selection['rates_among_sites'],
-        gamma_categories, threads)
+        dir_, data_model_selection['model_full'], data_model_selection['rates_among_sites'], settings, threads)
 
     # Run MEGA model selection
     command = Command(' '.join([

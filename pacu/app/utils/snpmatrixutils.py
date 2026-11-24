@@ -94,8 +94,8 @@ def create_snp_matrix(paths_vcf: list[Path], names: list[str], path_out: Path, p
     if include_ref is True:
         seq_by_sample_name['reference'] = []
     for snp_pos, nucl_by_sample in sorted(nucl_by_pos.items(), key=lambda x: x[0].position):
-        for name in seq_by_sample_name:
-            seq_by_sample_name[name].append(nucl_by_sample.get(name, snp_pos.reference_base))
+        for name, seq in seq_by_sample_name.items():
+            seq.append(nucl_by_sample.get(name, snp_pos.reference_base))
 
     # Write output file
     seqs = [SeqRecord(Seq(''.join(seq)), name, description='') for name, seq in seq_by_sample_name.items()]

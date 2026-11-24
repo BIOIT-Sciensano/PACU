@@ -164,7 +164,7 @@ def filter_snp_distance(vcf_in: Path, vcf_out: Path, min_dist: int = 10) -> None
         data_snps['chr_next'] = data_snps['chr'].shift(-1)
         data_snps['pos_prev'] = data_snps['pos'].shift(1)
         data_snps['chr_prev'] = data_snps['chr'].shift(1)
-        data_snps['dist'] = data_snps.apply(lambda x: calculate_distance(x), axis=1)
+        data_snps['dist'] = data_snps.apply(calculate_distance, axis=1)
 
         # Extract the keys of the variants that need to be filtered
         keys_removed = [(x['chr'], x['pos']) for x in data_snps[data_snps['dist'].apply(

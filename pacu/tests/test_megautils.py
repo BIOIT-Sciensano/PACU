@@ -50,13 +50,15 @@ class TestMEGAUtils(unittest.TestCase):
                 path_csv=path_model_selection_csv,
                 path_out=path_out_nwk,
                 dir_=Path(dir_),
-                branch_swap_filter='Weak',
-                missing_data_treatment='Use all sites',
-                site_cov_cutoff=None,
-                bootstrap_replicates=100,
-                heuristic_method='SPR3',
-                initial_tree='NJ',
-                gamma_categories=5,
+                settings=megautils.TreeBuildingSettings(
+                    branch_swap_filter='Weak',
+                    missing_data_treatment='Use all sites',
+                    site_cov_cutoff=None,
+                    bootstrap_replicates=100,
+                    heuristic_method='SPR3',
+                    initial_tree='NJ',
+                    gamma_categories=5
+                ),
                 threads=4
             )
 

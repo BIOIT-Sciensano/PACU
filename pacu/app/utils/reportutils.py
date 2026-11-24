@@ -11,6 +11,12 @@ from pacu.app.report.htmlelement import HtmlElement
 from pacu.app.report.htmlreportsection import HtmlReportSection
 from pacu.app.report.htmltablecell import HtmlTableCell
 
+# Thresholds for the colors in the read mapping table (green: >= *_GREEN_MIN, red: < *_RED_MAX, otherwise orange)
+DEPTH_GREEN_MIN = 20
+DEPTH_RED_MAX = 10
+COVERAGE_GREEN_MIN = 95
+COVERAGE_RED_MAX = 90
+
 
 def create_upsetplot_overlap(data_overlap: pd.DataFrame, png_out: Path) -> None:
     """
@@ -124,9 +130,9 @@ def __get_colored_cell_depth(value: int) -> HtmlTableCell:
     :return: Table cell
     """
     value_str = f'{value:,}'
-    if value >= 20:
+    if value >= DEPTH_GREEN_MIN:
         color = 'green'
-    elif value < 10:
+    elif value < DEPTH_RED_MAX:
         color = 'red'
     else:
         color = 'orange'
@@ -140,9 +146,9 @@ def __get_colored_cell_coverage(value: int) -> HtmlTableCell:
     :return: Table cell
     """
     value_str = f'{value:.2f}%'
-    if value >= 95:
+    if value >= COVERAGE_GREEN_MIN:
         color = 'green'
-    elif value < 90:
+    elif value < COVERAGE_RED_MAX:
         color = 'red'
     else:
         color = 'orange'
@@ -167,8 +173,8 @@ def create_mapping_section(path_stats: Path, path_ref: Path) -> HtmlReportSectio
     ] for row in data_vc.to_dict('records')], header, [('class', 'data')])
     section.add_paragraph(
         """
-        Datasets with a median depth between 20x-10x are displayed in orange (warning). Datasets with a median depth 
-        <10x are displayed in red and should be re-sequenced. The genome coverage cut-offs are 95% (warning) and 90% 
+        Datasets with a median depth between 20x-10x are displayed in orange (warning). Datasets with a median depth
+        <10x are displayed in red and should be re-sequenced. The genome coverage cut-offs are 95% (warning) and 90%
         (error).
         """
     )
