@@ -69,8 +69,12 @@ class HtmlBase:
         """
         return self._doc.getvalue()
 
-    def add_table(self, data: list[Sequence[Union[str, int, 'HtmlBase']]], column_names: list[str] = None,
-                  table_attributes: list[tuple[str, str]] = None) -> None:
+    def add_table(
+        self,
+        data: list[Sequence[Union[str, int, 'HtmlBase']]],
+        column_names: list[str] = None,
+        table_attributes: list[tuple[str, str]] = None,
+    ) -> None:
         """
         Adds a table.
         :param data: Table data
@@ -96,8 +100,7 @@ class HtmlBase:
                 with self.get_tag('th'):
                     self.add_text(name)
 
-    def _add_table_row(self, data: Sequence[str | int], attributes: list[tuple[str, str]] | None = None) -> \
-            None:
+    def _add_table_row(self, data: Sequence[str | int], attributes: list[tuple[str, str]] | None = None) -> None:
         """
         Adds a row to a table.
         :param data: Row data
@@ -157,8 +160,9 @@ class HtmlBase:
                 self._doc.text(f'{type_}: ')
             self.add_text(message)
 
-    def add_labeled_list(self, rows: list[Sequence[str]], ordered=False,
-                         attributes: list[tuple[str, str]] = None) -> None:
+    def add_labeled_list(
+        self, rows: list[Sequence[str]], ordered=False, attributes: list[tuple[str, str]] = None
+    ) -> None:
         """
         Adds a labeled list.
         :param rows: List of label-text pairs

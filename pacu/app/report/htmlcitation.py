@@ -22,14 +22,13 @@ class HtmlCitation(HtmlBase):
         self._authors = '; '.join(citation_data['first_authors'])
         self._pub_year = citation_data['publication_year'].split('/')[0]
         self._title = citation_data['primary_title']
-        citation_processor = {
-            'jour': self._process_journal_citation,
-            'book': self._process_book_citation}
+        citation_processor = {'jour': self._process_journal_citation, 'book': self._process_book_citation}
         try:
             citation_processor[citation_data['type_of_reference'].lower()]()
         except KeyError as err:
             raise KeyError(
-                f"Citations of type {citation_data['type_of_reference']} are not supported! (KeyError '{err}')")
+                f"Citations of type {citation_data['type_of_reference']} are not supported! (KeyError '{err}')"
+            )
 
     def _process_journal_citation(self) -> None:
         """
@@ -40,7 +39,9 @@ class HtmlCitation(HtmlBase):
             with self.get_tag('p'):
                 # Volume + (number optional)
                 journal_parts = [
-                    self._citation_data['alternate_title3'], f", {self._citation_data.get('volume', 'n/a')}"]
+                    self._citation_data['alternate_title3'],
+                    f", {self._citation_data.get('volume', 'n/a')}",
+                ]
                 if 'number' in self._citation_data:
                     journal_parts.append(f" ({self._citation_data['number']})")
                 journal = ''.join(journal_parts)

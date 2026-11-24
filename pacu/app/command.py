@@ -74,12 +74,8 @@ class Command:
         if self.command is None:
             raise ValueError("Invalid command 'None'")
         self._procedure = subprocess.run(
-            self._command,
-            stdout=subprocess.PIPE,
-            stderr=stderr_handle,
-            shell=True,
-            executable='/bin/bash',
-            cwd=folder)
+            self._command, stdout=subprocess.PIPE, stderr=stderr_handle, shell=True, executable='/bin/bash', cwd=folder
+        )
         self._stdout = self._procedure.stdout.decode('utf-8')
         if self._procedure.stderr is not None:
             self._stderr = self._procedure.stderr.decode('utf-8')

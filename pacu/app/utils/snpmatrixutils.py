@@ -19,6 +19,7 @@ class SNPPosition:
     """
     Represents a position in an SNP matrix.
     """
+
     contig: str
     position: int
     reference_base: str
@@ -45,8 +46,9 @@ def parse_vcf_file(path_vcf: Path, include_filtered: bool) -> list[VCFRecord]:
     return vcf_records
 
 
-def __get_nucleotides_per_position(paths_vcf: list[Path], names: list[str], include_filtered: bool = False) -> \
-        dict[SNPPosition, dict[str, str]]:
+def __get_nucleotides_per_position(
+    paths_vcf: list[Path], names: list[str], include_filtered: bool = False
+) -> dict[SNPPosition, dict[str, str]]:
     """
     Returns a dictionary with the nucleotide for each sample at each variant position.
     :param paths_vcf: List of input VCF files
@@ -63,15 +65,17 @@ def __get_nucleotides_per_position(paths_vcf: list[Path], names: list[str], incl
                 nucl_by_position[position][name] = str(record.ALT[0])
 
     # Remove positions with only N
-    nucl_by_position = {pos: nucl for pos, nucl in sorted(nucl_by_position.items()) if not all(
-        [x == 'N' for x in nucl.values()])}
+    nucl_by_position = {
+        pos: nucl for pos, nucl in sorted(nucl_by_position.items()) if not all([x == 'N' for x in nucl.values()])
+    }
 
     logger.info(f"{len(nucl_by_position):,} SNP positions found across all samples")
     return nucl_by_position
 
 
-def create_snp_matrix(paths_vcf: list[Path], names: list[str], path_out: Path, path_tsv: Path | None = None,
-                      include_ref: bool = False) -> None:
+def create_snp_matrix(
+    paths_vcf: list[Path], names: list[str], path_out: Path, path_tsv: Path | None = None, include_ref: bool = False
+) -> None:
     """
     Creates an SNP matrix from the input VCF file.
     :param paths_vcf: List of input VCF files

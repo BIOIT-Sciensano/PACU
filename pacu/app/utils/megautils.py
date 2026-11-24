@@ -16,33 +16,33 @@ SUBSTITUTION_MODELS = {
     'T92': 'Tamura 3-parameter model',
     'HKY': 'Hasegawa-Kishino-Yano model',
     'TN93': 'Tamura-Nei model',
-    'GTR': 'General Time Reversible model'
+    'GTR': 'General Time Reversible model',
 }
 
 HEURISTIC_METHODS = {
     'NNI': 'Nearest-Neighbor-Interchange (NNI)',
     'SPR3': 'Subtree-Pruning-Regrafting - Fast (SPR level 3)',
-    'SPR5': 'Subtree-Pruning-Regrafting - Extensive (SPR level 5)'
+    'SPR5': 'Subtree-Pruning-Regrafting - Extensive (SPR level 5)',
 }
 
 INITIAL_TREE = {
     'NJ_BioNJ': 'Make initial tree automatically (Default - NJ/BioNJ)',
     'Max_Parsimony': 'Make initial tree automatically (Maximum Parsimony)',
     'NJ': 'Make initial tree automatically (Neighbor Joining)',
-    'BioNJ': 'Make initial tree automatically (BioNJ)'
+    'BioNJ': 'Make initial tree automatically (BioNJ)',
 }
 
 RATES_AMONG_SITES = {
     'U': 'Uniform Rates',
     'G': 'Gamma Distributed (G)',
     'I': 'Has Invariant Sites (I)',
-    'G+I': 'Gamma Distributed With Invariant Sites (G+I)'
+    'G+I': 'Gamma Distributed With Invariant Sites (G+I)',
 }
 
 
 def __create_config_file_model_selection(
-        dir_: Path, branch_swap_filter: str, missing_data_treatment: str, site_cov_cutoff: int | None,
-        threads: int = 4) -> Path:
+    dir_: Path, branch_swap_filter: str, missing_data_treatment: str, site_cov_cutoff: int | None, threads: int = 4
+) -> Path:
     """
     Generates the config file for the model selection.
     :param dir_: Working directory
@@ -60,17 +60,26 @@ def __create_config_file_model_selection(
     # Create filled-in template
     path_out = dir_ / 'config-model_selection.mao'
     with path_out.open('w') as handle:
-        handle.write(template.format(
-            branch_swap_filter=branch_swap_filter,
-            missing_data_treatment=missing_data_treatment,
-            site_coverage_cutoff=site_cov_cutoff if site_cov_cutoff is not None else 'Not Applicable',
-            threads=threads
-        ))
+        handle.write(
+            template.format(
+                branch_swap_filter=branch_swap_filter,
+                missing_data_treatment=missing_data_treatment,
+                site_coverage_cutoff=site_cov_cutoff if site_cov_cutoff is not None else 'Not Applicable',
+                threads=threads,
+            )
+        )
     return path_out
 
 
-def run_model_selection(path_fasta: Path, path_out: Path, dir_: Path, branch_swap_filter: str,
-                        missing_data_treatment: str, site_cov_cutoff: int | None, threads: int = 4) -> None:
+def run_model_selection(
+    path_fasta: Path,
+    path_out: Path,
+    dir_: Path,
+    branch_swap_filter: str,
+    missing_data_treatment: str,
+    site_cov_cutoff: int | None,
+    threads: int = 4,
+) -> None:
     """
     Runs model selection on the given SNP matrix.
     :param path_fasta: Input SNP matrix FASTA file
@@ -84,12 +93,11 @@ def run_model_selection(path_fasta: Path, path_out: Path, dir_: Path, branch_swa
     """
     # Create configuration file
     path_config = __create_config_file_model_selection(
-        dir_, branch_swap_filter, missing_data_treatment, site_cov_cutoff, threads)
+        dir_, branch_swap_filter, missing_data_treatment, site_cov_cutoff, threads
+    )
 
     # Run MEGA model selection
-    command = Command(' '.join([
-        'megacc', f'-d {path_fasta}', f'-a {path_config}', f'-o {path_out}'
-    ]))
+    command = Command(' '.join(['megacc', f'-d {path_fasta}', f'-a {path_config}', f'-o {path_out}']))
     command.run(path_out.parent)
     if not command.exit_code == 0:
         raise RuntimeError(f'Error running model selection: {command.stderr}')
@@ -139,7 +147,8 @@ class TreeBuildingSettings:
 
 
 def __create_config_file_tree_construction(
-        dir_: Path, model: str, rates_among_sites: str, settings: TreeBuildingSettings, threads: int = 4) -> Path:
+    dir_: Path, model: str, rates_among_sites: str, settings: TreeBuildingSettings, threads: int = 4
+) -> Path:
     """
     Generates the config file for the tree construction.
     :param dir_: Working directory
@@ -158,23 +167,26 @@ def __create_config_file_tree_construction(
     # Create filled-in template
     path_out = dir_ / 'config-tree_building.mao'
     with path_out.open('w') as handle:
-        handle.write(template.format(
-            bootstrap_replications=settings.bootstrap_replicates,
-            model=model,
-            heuristic_method=HEURISTIC_METHODS[settings.heuristic_method],
-            initial_tree=INITIAL_TREE[settings.initial_tree],
-            rates_among_sites=RATES_AMONG_SITES[rates_among_sites],
-            branch_swap_filter=settings.branch_swap_filter,
-            gamma_categories=settings.gamma_categories,
-            missing_data_treatment=settings.missing_data_treatment,
-            site_coverage_cutoff=settings.site_cov_cutoff,
-            threads=threads
-        ))
+        handle.write(
+            template.format(
+                bootstrap_replications=settings.bootstrap_replicates,
+                model=model,
+                heuristic_method=HEURISTIC_METHODS[settings.heuristic_method],
+                initial_tree=INITIAL_TREE[settings.initial_tree],
+                rates_among_sites=RATES_AMONG_SITES[rates_among_sites],
+                branch_swap_filter=settings.branch_swap_filter,
+                gamma_categories=settings.gamma_categories,
+                missing_data_treatment=settings.missing_data_treatment,
+                site_coverage_cutoff=settings.site_cov_cutoff,
+                threads=threads,
+            )
+        )
     return path_out
 
 
-def run_tree_building(path_fasta: Path, path_csv: Path, path_out: Path, dir_: Path, settings: TreeBuildingSettings,
-                      threads: int = 4) -> None:
+def run_tree_building(
+    path_fasta: Path, path_csv: Path, path_out: Path, dir_: Path, settings: TreeBuildingSettings, threads: int = 4
+) -> None:
     """
     Runs the ML tree reconstruction using MEGA.
     :param path_fasta: Input SNP matrix FASTA file
@@ -190,12 +202,11 @@ def run_tree_building(path_fasta: Path, path_csv: Path, path_out: Path, dir_: Pa
 
     # Create configuration file
     path_config = __create_config_file_tree_construction(
-        dir_, data_model_selection['model_full'], data_model_selection['rates_among_sites'], settings, threads)
+        dir_, data_model_selection['model_full'], data_model_selection['rates_among_sites'], settings, threads
+    )
 
     # Run MEGA model selection
-    command = Command(' '.join([
-        'megacc', f'-d {path_fasta}', f'-a {path_config}', f'-o {path_out}'
-    ]))
+    command = Command(' '.join(['megacc', f'-d {path_fasta}', f'-a {path_config}', f'-o {path_out}']))
     command.run(path_out.parent)
     if not command.exit_code == 0:
         raise RuntimeError(f'Error running tree construction: {command.stderr}')

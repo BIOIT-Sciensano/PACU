@@ -44,8 +44,9 @@ def is_new_region(record: pd.Series) -> bool:
     return False
 
 
-def calculate_overlaps(contig_sizes: dict[str, int], bed_phages: Path, bed_gubbins: Path,
-                       bed_depth: Path) -> pd.DataFrame:
+def calculate_overlaps(
+    contig_sizes: dict[str, int], bed_phages: Path, bed_gubbins: Path, bed_depth: Path
+) -> pd.DataFrame:
     """
     Determines which reference positions are covered by each of the BED files used for region filtering.
     :param contig_sizes: Length of each contig in the reference genome
@@ -69,11 +70,11 @@ def calculate_overlaps(contig_sizes: dict[str, int], bed_phages: Path, bed_gubbi
     data_by_contig = []
     for contig in contig_sizes:
         idx_covered = numpy.flatnonzero(numpy.logical_or.reduce([masks[key][contig] for key in bed_dict]))
-        data_by_contig.append(pd.DataFrame({
-            'chr': contig,
-            'pos': idx_covered + 1,
-            **{key: masks[key][contig][idx_covered] for key in bed_dict}
-        }))
+        data_by_contig.append(
+            pd.DataFrame(
+                {'chr': contig, 'pos': idx_covered + 1, **{key: masks[key][contig][idx_covered] for key in bed_dict}}
+            )
+        )
     data_overlap = pd.concat(data_by_contig, ignore_index=True)
     logger.info(f'{len(data_overlap):,} positions removed in total')
     return data_overlap
@@ -98,10 +99,15 @@ def count_overlap(bed_file_a: Path, bed_file_b: Path) -> int:
     :return: Number of overlaps
     """
     with tempfile.TemporaryDirectory(prefix='pacu_') as dir_temp:
-        command = Command(' '.join([
-            f'bedtools multiinter -i {bed_file_a} {bed_file_b}',
-            '|', "awk -F'\t' 'BEGIN{SUM=0}{SUM+=$3-$2 }END{print SUM}'"
-        ]))
+        command = Command(
+            ' '.join(
+                [
+                    f'bedtools multiinter -i {bed_file_a} {bed_file_b}',
+                    '|',
+                    "awk -F'\t' 'BEGIN{SUM=0}{SUM+=$3-$2 }END{print SUM}'",
+                ]
+            )
+        )
         command.run(Path(dir_temp))
     return int(command.stdout)
 
@@ -167,8 +173,10 @@ def filter_snp_distance(vcf_in: Path, vcf_out: Path, min_dist: int = 10) -> None
         data_snps['dist'] = data_snps.apply(calculate_distance, axis=1)
 
         # Extract the keys of the variants that need to be filtered
-        keys_removed = [(x['chr'], x['pos']) for x in data_snps[data_snps['dist'].apply(
-            lambda x: x is not None and x <= min_dist)].to_dict('records')]
+        keys_removed = [
+            (x['chr'], x['pos'])
+            for x in data_snps[data_snps['dist'].apply(lambda x: x is not None and x <= min_dist)].to_dict('records')
+        ]
     else:
         keys_removed = []
     logger.info(f'Filtering {len(keys_removed):,} variants based on distance')
@@ -231,14 +239,18 @@ def plot_newick_phylogeny(path_nwk: Path, path_out: Path, width: int = 600, heig
             handle_out.writelines(handle_in.readlines())
 
         # Create the visualization
-        command = Command(' '.join([
-            'figtree',
-            '-graphic PNG',
-            f'-width {width}',
-            f'-height {height}',
-            str(file_.name),
-            str(path_out.absolute())
-        ]))
+        command = Command(
+            ' '.join(
+                [
+                    'figtree',
+                    '-graphic PNG',
+                    f'-width {width}',
+                    f'-height {height}',
+                    str(file_.name),
+                    str(path_out.absolute()),
+                ]
+            )
+        )
         command.run(path_out.parent)
         if not command.exit_code == 0:
             raise RuntimeError(f"Error visualizing tree: {command.stderr}")
@@ -272,6 +284,7 @@ PATTERNS_FQ_PE = [
     r'(.*)_R1.(fastq|fq)(\.gz)?',
 ]
 
+
 def determine_name_from_fq(fq_ont: Path = None, fq_illumina_1p: Path = None) -> str:
     """
     Determines the sample name from the FASTQ input.
@@ -288,7 +301,8 @@ def determine_name_from_fq(fq_ont: Path = None, fq_illumina_1p: Path = None) -> 
                 continue
             return m.group(1)
         logger.warning(
-            'The input FASTQ filename does not match any of the supported formats for sample name determination')
+            'The input FASTQ filename does not match any of the supported formats for sample name determination'
+        )
         return re.sub(r'.(fastq|fq)(\.gz)?', '', fq_illumina_1p.name)
     else:
         raise ValueError('No FASTQ file provided')
