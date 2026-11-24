@@ -1,0 +1,39 @@
+stages:
+  - lint
+  - test
+  - build
+
+variables:
+  GIT_CLEAN_FLAGS: -ffdx
+
+ruff:
+  stage: lint
+  image: ghcr.io/astral-sh/uv:python3.12-bookworm-slim
+  script:
+    - uvx ruff check .
+    - uvx ruff format --check .
+
+tests:
+  stage: test
+  image: ghcr.io/prefix-dev/pixi:0.47.0
+  timeout: 1h
+  script:
+    - pixi install
+    - pixi run pytest pacu/tests -k "not mega"
+
+build:
+  stage: build
+  image: ghcr.io/astral-sh/uv:python3.12-bookworm-slim
+  rules:
+    - if: $CI_COMMIT_TAG
+  script:
+    # Refuse to build if the tag doesn't match pacu/version.py
+    - VERSION=$(grep -oP "(?<=__version__ = ')[^']+" pacu/version.py)
+    - test "$CI_COMMIT_TAG" = "v$VERSION" || { echo "Tag $CI_COMMIT_TAG != v$VERSION"; exit 1; }
+    - uv build
+    - uvx twine check dist/*
+  artifacts:
+    name: "pacu_snp-$CI_COMMIT_TAG"
+    paths:
+      - dist/
+    expire_in: 4 weeks
